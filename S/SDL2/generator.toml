@@ -1,0 +1,29 @@
+[general]
+library_name = "libsdl2"
+output_file_path = "./LibSDL2.jl"
+module_name = "LibSDL2"
+jll_pkg_name = "SDL2_jll"
+jll_pkg_extra = ["SDL2_mixer_jll", "SDL2_image_jll", "SDL2_ttf_jll"]
+export_symbol_prefixes = ["TTF_", "IMG_", "Mix_", "SDL_"]
+
+use_julia_native_enum_type = true
+use_deterministic_symbol = true
+
+printer_blacklist = [
+    "SDL_PRIu64",
+    "SDL_PRIx64",
+    "SDL_PRIX64",
+    "SDL_FILE",
+    "SDL_LINE",
+    "Mix_SetError",
+    "Mix_GetError",
+    "Mix_ClearError",
+    "IMG_SetError",
+    "IMG_GetError",
+    "TTF_SetError",
+    "TTF_GetError",
+]
+
+
+[codegen.macro]
+macro_mode = "basic"

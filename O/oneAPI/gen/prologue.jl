@@ -1,0 +1,1 @@
+macro checked(x) end

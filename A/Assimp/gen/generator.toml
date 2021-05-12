@@ -1,0 +1,12 @@
+[general]
+library_name = "libassimp"
+output_file_path = "../src/LibAssimp.jl"
+module_name = "LibAssimp"
+jll_pkg_name = "assimp_jll"
+export_symbol_prefixes = ["ai", "AI"]
+use_deterministic_symbol = true
+
+printer_blacklist = [
+    "aiGetMaterialFloat", # why this is not functionlike?
+    "aiGetMaterialInteger",
+]
