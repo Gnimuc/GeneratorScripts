@@ -5,7 +5,7 @@ output_file_path = "../src/LibSDL2.jl"
 module_name = "LibSDL2"
 jll_pkg_name = "SDL2_jll"
 jll_pkg_extra = ["SDL2_mixer_jll", "SDL2_image_jll", "SDL2_ttf_jll"]
-export_symbol_prefixes = ["TTF_", "IMG_", "Mix_", "SDL_"]
+export_symbol_prefixes = ["TTF_", "IMG_", "Mix_", "SDL_", "MIX_", "RW_", "AUDIO_", "KMOD_", "HAVE_", ]
 prologue_file_path = "./prologue.jl"
 use_deterministic_symbol = true
 

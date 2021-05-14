@@ -6352,7 +6352,7 @@ const TTF_HINTING_MONO = 2
 const TTF_HINTING_NONE = 3
 
 # exports
-const PREFIXES = ["TTF_", "IMG_", "Mix_", "SDL_"]
+const PREFIXES = ["TTF_", "IMG_", "Mix_", "SDL_", "MIX_", "RW_", "AUDIO_", "KMOD_", "HAVE_"]
 for name in names(@__MODULE__; all=true), prefix in PREFIXES
     if startswith(string(name), prefix)
         @eval export $name
