@@ -2,6 +2,7 @@ const __fd_mask = Culong
 
 mutable struct fd_set
     __fds_bits::NTuple{16, __fd_mask}
+    fd_set() = new()
 end
 
 const __sa_family_t = UInt8
@@ -161,6 +162,7 @@ mutable struct curl_sockaddr
     protocol::Cint
     addrlen::Cuint
     addr::sockaddr
+    curl_sockaddr() = new()
 end
 
 # typedef curl_socket_t ( * curl_opensocket_callback ) ( void * clientp , curlsocktype purpose , struct curl_sockaddr * address )
@@ -386,6 +388,7 @@ mutable struct curl_khkey
     key::Ptr{Cchar}
     len::Csize_t
     keytype::curl_khtype
+    curl_khkey() = new()
 end
 
 @enum curl_khstat::UInt32 begin
@@ -891,6 +894,7 @@ end
 mutable struct curl_forms
     option::CURLformoption
     value::Ptr{Cchar}
+    curl_forms() = new()
 end
 
 @enum CURLFORMcode::UInt32 begin
@@ -959,6 +963,7 @@ end
 mutable struct curl_ssl_backend
     id::curl_sslbackend
     name::Ptr{Cchar}
+    curl_ssl_backend() = new()
 end
 
 @enum CURLsslset::UInt32 begin
@@ -987,11 +992,13 @@ end
 mutable struct curl_certinfo
     num_of_certs::Cint
     certinfo::Ptr{Ptr{curl_slist}}
+    curl_certinfo() = new()
 end
 
 mutable struct curl_tlssessioninfo
     backend::curl_sslbackend
     internals::Ptr{Cvoid}
+    curl_tlssessioninfo() = new()
 end
 
 @enum CURLINFO::UInt32 begin
@@ -1163,6 +1170,7 @@ mutable struct curl_version_info_data
     capath::Ptr{Cchar}
     zstd_ver_num::Cuint
     zstd_version::Ptr{Cchar}
+    curl_version_info_data() = new()
 end
 
 function curl_version_info(arg1)
@@ -1185,6 +1193,7 @@ mutable struct curl_blob
     data::Ptr{Cvoid}
     len::Csize_t
     flags::Cuint
+    curl_blob() = new()
 end
 
 function curl_easy_init()
@@ -1269,6 +1278,7 @@ mutable struct curl_waitfd
     fd::curl_socket_t
     events::Cshort
     revents::Cshort
+    curl_waitfd() = new()
 end
 
 function curl_multi_init()
@@ -1447,6 +1457,7 @@ mutable struct curl_easyoption
     id::CURLoption
     type::curl_easytype
     flags::Cuint
+    curl_easyoption() = new()
 end
 
 function curl_easy_option_by_name(name)
@@ -1488,6 +1499,7 @@ mutable struct __JL_Ctag_41
     user::Ptr{Cchar}
     group::Ptr{Cchar}
     target::Ptr{Cchar}
+    __JL_Ctag_41() = new()
 end
 
 function Base.getproperty(x::Ptr{__JL_Ctag_41}, f::Symbol)
@@ -1922,7 +1934,7 @@ const CURLINFO_SOCKET = 0x00500000
 
 const CURLINFO_OFF_T = 0x00600000
 
-const CURLINFO_MASK = Float32(0x0000ffff)
+const CURLINFO_MASK = 0x000fffff
 
 const CURLINFO_TYPEMASK = 0x00f00000
 

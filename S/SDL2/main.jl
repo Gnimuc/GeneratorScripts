@@ -6,9 +6,8 @@ Pkg.develop("Clang")
 Pkg.instantiate()
 
 # run generator
-include("generator.jl")
+include("gen/generator.jl")
 
 # loading generated package
-include(options["general"]["output_file_path"])
-mod = Symbol(options["general"]["module_name"])
-@eval using .$mod
+include(joinpath(@__DIR__, "src", "LibSDL2.jl"))
+using .LibSDL2

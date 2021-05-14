@@ -12,63 +12,78 @@ export SDL2_image_jll
 using SDL2_ttf_jll
 export SDL2_ttf_jll
 
+using CEnum
+
+const SDL_MIN_SINT8 = reinterpret(Int8, ~0x7F)
+const SDL_MIN_SINT16 = reinterpret(Int16, ~0x7FFF)
+const SDL_MIN_SINT32 = reinterpret(Int32, ~0x7FFFFFFF)
+const SDL_MIN_SINT64 = reinterpret(Int64, ~0x7FFFFFFFFFFFFFFF)
+
+const SDL_ICONV_ERROR = reinterpret(Csize_t, -1)
+const SDL_ICONV_E2BIG = reinterpret(Csize_t, -2)
+const SDL_ICONV_EILSEQ = reinterpret(Csize_t, -3)
+const SDL_ICONV_EINVAL = reinterpret(Csize_t, -4)
+
+const SDL_TOUCH_MOUSEID = reinterpret(UInt32, Int32(-1))
+
+
 function SDL_GetPlatform()
     ccall((:SDL_GetPlatform, libsdl2), Ptr{Cchar}, ())
 end
 
-@enum SDL_bool::UInt32 begin
+@cenum SDL_bool::UInt32 begin
     SDL_FALSE = 0
     SDL_TRUE = 1
 end
 
-const Sint8 = Cint
+const Sint8 = Int8
 
-const Uint8 = Cint
+const Uint8 = UInt8
 
-const Sint16 = Cint
+const Sint16 = Int16
 
-const Uint16 = Cint
+const Uint16 = UInt16
 
-const Sint32 = Cint
+const Sint32 = Int32
 
-const Uint32 = Cint
+const Uint32 = UInt32
 
-const Sint64 = Cint
+const Sint64 = Int64
 
-const Uint64 = Cint
+const Uint64 = UInt64
 
-const SDL_compile_time_assert_uint8 = Cint
+const SDL_compile_time_assert_uint8 = NTuple{1, Cint}
 
-const SDL_compile_time_assert_sint8 = Cint
+const SDL_compile_time_assert_sint8 = NTuple{1, Cint}
 
-const SDL_compile_time_assert_uint16 = Cint
+const SDL_compile_time_assert_uint16 = NTuple{1, Cint}
 
-const SDL_compile_time_assert_sint16 = Cint
+const SDL_compile_time_assert_sint16 = NTuple{1, Cint}
 
 const SDL_compile_time_assert_uint32 = NTuple{1, Cint}
 
 const SDL_compile_time_assert_sint32 = NTuple{1, Cint}
 
-const SDL_compile_time_assert_uint64 = Cint
+const SDL_compile_time_assert_uint64 = NTuple{1, Cint}
 
-const SDL_compile_time_assert_sint64 = Cint
+const SDL_compile_time_assert_sint64 = NTuple{1, Cint}
 
-@enum SDL_DUMMY_ENUM::UInt32 begin
+@cenum SDL_DUMMY_ENUM::UInt32 begin
     DUMMY_ENUM_VALUE = 0
 end
 
 const SDL_compile_time_assert_enum = NTuple{1, Cint}
 
 function SDL_malloc(size)
-    ccall((:SDL_malloc, libsdl2), Ptr{Cvoid}, (Cint,), size)
+    ccall((:SDL_malloc, libsdl2), Ptr{Cvoid}, (Csize_t,), size)
 end
 
 function SDL_calloc(nmemb, size)
-    ccall((:SDL_calloc, libsdl2), Ptr{Cvoid}, (Cint, Cint), nmemb, size)
+    ccall((:SDL_calloc, libsdl2), Ptr{Cvoid}, (Csize_t, Csize_t), nmemb, size)
 end
 
 function SDL_realloc(mem, size)
-    ccall((:SDL_realloc, libsdl2), Ptr{Cvoid}, (Ptr{Cvoid}, Cint), mem, size)
+    ccall((:SDL_realloc, libsdl2), Ptr{Cvoid}, (Ptr{Cvoid}, Csize_t), mem, size)
 end
 
 function SDL_free(mem)
@@ -108,7 +123,7 @@ function SDL_setenv(name, value, overwrite)
 end
 
 function SDL_qsort(base, nmemb, size, compare)
-    ccall((:SDL_qsort, libsdl2), Cvoid, (Ptr{Cvoid}, Cint, Cint, Ptr{Cvoid}), base, nmemb, size, compare)
+    ccall((:SDL_qsort, libsdl2), Cvoid, (Ptr{Cvoid}, Csize_t, Csize_t, Ptr{Cvoid}), base, nmemb, size, compare)
 end
 
 function SDL_abs(x)
@@ -140,67 +155,67 @@ function SDL_tolower(x)
 end
 
 function SDL_memset(dst, c, len)
-    ccall((:SDL_memset, libsdl2), Ptr{Cvoid}, (Ptr{Cvoid}, Cint, Cint), dst, c, len)
+    ccall((:SDL_memset, libsdl2), Ptr{Cvoid}, (Ptr{Cvoid}, Cint, Csize_t), dst, c, len)
 end
 
 function SDL_memset4(dst, val, dwords)
-    ccall((:SDL_memset4, libsdl2), Cvoid, (Ptr{Cvoid}, Uint32, Cint), dst, val, dwords)
+    ccall((:SDL_memset4, libsdl2), Cvoid, (Ptr{Cvoid}, Uint32, Csize_t), dst, val, dwords)
 end
 
 function SDL_memcpy(dst, src, len)
-    ccall((:SDL_memcpy, libsdl2), Ptr{Cvoid}, (Ptr{Cvoid}, Ptr{Cvoid}, Cint), dst, src, len)
+    ccall((:SDL_memcpy, libsdl2), Ptr{Cvoid}, (Ptr{Cvoid}, Ptr{Cvoid}, Csize_t), dst, src, len)
 end
 
 function SDL_memmove(dst, src, len)
-    ccall((:SDL_memmove, libsdl2), Ptr{Cvoid}, (Ptr{Cvoid}, Ptr{Cvoid}, Cint), dst, src, len)
+    ccall((:SDL_memmove, libsdl2), Ptr{Cvoid}, (Ptr{Cvoid}, Ptr{Cvoid}, Csize_t), dst, src, len)
 end
 
 function SDL_memcmp(s1, s2, len)
-    ccall((:SDL_memcmp, libsdl2), Cint, (Ptr{Cvoid}, Ptr{Cvoid}, Cint), s1, s2, len)
+    ccall((:SDL_memcmp, libsdl2), Cint, (Ptr{Cvoid}, Ptr{Cvoid}, Csize_t), s1, s2, len)
 end
 
-function SDL_wcslen()
-    ccall((:SDL_wcslen, libsdl2), Cint, ())
+function SDL_wcslen(wstr)
+    ccall((:SDL_wcslen, libsdl2), Csize_t, (Ptr{Cwchar_t},), wstr)
 end
 
-function SDL_wcslcpy()
-    ccall((:SDL_wcslcpy, libsdl2), Cint, ())
+function SDL_wcslcpy(dst, src, maxlen)
+    ccall((:SDL_wcslcpy, libsdl2), Csize_t, (Ptr{Cwchar_t}, Ptr{Cwchar_t}, Csize_t), dst, src, maxlen)
 end
 
-function SDL_wcslcat()
-    ccall((:SDL_wcslcat, libsdl2), Cint, ())
+function SDL_wcslcat(dst, src, maxlen)
+    ccall((:SDL_wcslcat, libsdl2), Csize_t, (Ptr{Cwchar_t}, Ptr{Cwchar_t}, Csize_t), dst, src, maxlen)
 end
 
-function SDL_wcsdup()
-    ccall((:SDL_wcsdup, libsdl2), Ptr{Cint}, ())
+function SDL_wcsdup(wstr)
+    ccall((:SDL_wcsdup, libsdl2), Ptr{Cwchar_t}, (Ptr{Cwchar_t},), wstr)
 end
 
-function SDL_wcsstr()
-    ccall((:SDL_wcsstr, libsdl2), Ptr{Cint}, ())
+function SDL_wcsstr(haystack, needle)
+    ccall((:SDL_wcsstr, libsdl2), Ptr{Cwchar_t}, (Ptr{Cwchar_t}, Ptr{Cwchar_t}), haystack, needle)
 end
 
 function SDL_wcscmp(str1, str2)
-    ccall((:SDL_wcscmp, libsdl2), Cint, (Ptr{Cint}, Ptr{Cint}), str1, str2)
+    ccall((:SDL_wcscmp, libsdl2), Cint, (Ptr{Cwchar_t}, Ptr{Cwchar_t}), str1, str2)
 end
 
 function SDL_wcsncmp(str1, str2, maxlen)
-    ccall((:SDL_wcsncmp, libsdl2), Cint, (Ptr{Cint}, Ptr{Cint}, Cint), str1, str2, maxlen)
+    ccall((:SDL_wcsncmp, libsdl2), Cint, (Ptr{Cwchar_t}, Ptr{Cwchar_t}, Csize_t), str1, str2, maxlen)
 end
 
-function SDL_strlen()
-    ccall((:SDL_strlen, libsdl2), Cint, ())
+function SDL_strlen(str)
+    ccall((:SDL_strlen, libsdl2), Csize_t, (Ptr{Cchar},), str)
 end
 
-function SDL_strlcpy()
-    ccall((:SDL_strlcpy, libsdl2), Cint, ())
+function SDL_strlcpy(dst, src, maxlen)
+    ccall((:SDL_strlcpy, libsdl2), Csize_t, (Ptr{Cchar}, Ptr{Cchar}, Csize_t), dst, src, maxlen)
 end
 
-function SDL_utf8strlcpy()
-    ccall((:SDL_utf8strlcpy, libsdl2), Cint, ())
+function SDL_utf8strlcpy(dst, src, dst_bytes)
+    ccall((:SDL_utf8strlcpy, libsdl2), Csize_t, (Ptr{Cchar}, Ptr{Cchar}, Csize_t), dst, src, dst_bytes)
 end
 
-function SDL_strlcat()
-    ccall((:SDL_strlcat, libsdl2), Cint, ())
+function SDL_strlcat(dst, src, maxlen)
+    ccall((:SDL_strlcat, libsdl2), Csize_t, (Ptr{Cchar}, Ptr{Cchar}, Csize_t), dst, src, maxlen)
 end
 
 function SDL_strdup(str)
@@ -235,8 +250,8 @@ function SDL_strtokr(s1, s2, saveptr)
     ccall((:SDL_strtokr, libsdl2), Ptr{Cchar}, (Ptr{Cchar}, Ptr{Cchar}, Ptr{Ptr{Cchar}}), s1, s2, saveptr)
 end
 
-function SDL_utf8strlen()
-    ccall((:SDL_utf8strlen, libsdl2), Cint, ())
+function SDL_utf8strlen(str)
+    ccall((:SDL_utf8strlen, libsdl2), Csize_t, (Ptr{Cchar},), str)
 end
 
 function SDL_itoa(value, str, radix)
@@ -296,7 +311,7 @@ function SDL_strcmp(str1, str2)
 end
 
 function SDL_strncmp(str1, str2, maxlen)
-    ccall((:SDL_strncmp, libsdl2), Cint, (Ptr{Cchar}, Ptr{Cchar}, Cint), str1, str2, maxlen)
+    ccall((:SDL_strncmp, libsdl2), Cint, (Ptr{Cchar}, Ptr{Cchar}, Csize_t), str1, str2, maxlen)
 end
 
 function SDL_strcasecmp(str1, str2)
@@ -304,15 +319,7 @@ function SDL_strcasecmp(str1, str2)
 end
 
 function SDL_strncasecmp(str1, str2, len)
-    ccall((:SDL_strncasecmp, libsdl2), Cint, (Ptr{Cchar}, Ptr{Cchar}, Cint), str1, str2, len)
-end
-
-function SDL_vsscanf(text, fmt, ap)
-    ccall((:SDL_vsscanf, libsdl2), Cint, (Ptr{Cchar}, Ptr{Cchar}, Cint), text, fmt, ap)
-end
-
-function SDL_vsnprintf(text, maxlen, fmt, ap)
-    ccall((:SDL_vsnprintf, libsdl2), Cint, (Ptr{Cchar}, Cint, Ptr{Cchar}, Cint), text, maxlen, fmt, ap)
+    ccall((:SDL_strncasecmp, libsdl2), Cint, (Ptr{Cchar}, Ptr{Cchar}, Csize_t), str1, str2, len)
 end
 
 function SDL_acos(x)
@@ -471,16 +478,16 @@ function SDL_iconv_close(cd)
     ccall((:SDL_iconv_close, libsdl2), Cint, (SDL_iconv_t,), cd)
 end
 
-function SDL_iconv()
-    ccall((:SDL_iconv, libsdl2), Cint, ())
+function SDL_iconv(cd, inbuf, inbytesleft, outbuf, outbytesleft)
+    ccall((:SDL_iconv, libsdl2), Csize_t, (SDL_iconv_t, Ptr{Ptr{Cchar}}, Ptr{Csize_t}, Ptr{Ptr{Cchar}}, Ptr{Csize_t}), cd, inbuf, inbytesleft, outbuf, outbytesleft)
 end
 
 function SDL_iconv_string(tocode, fromcode, inbuf, inbytesleft)
-    ccall((:SDL_iconv_string, libsdl2), Ptr{Cchar}, (Ptr{Cchar}, Ptr{Cchar}, Ptr{Cchar}, Cint), tocode, fromcode, inbuf, inbytesleft)
+    ccall((:SDL_iconv_string, libsdl2), Ptr{Cchar}, (Ptr{Cchar}, Ptr{Cchar}, Ptr{Cchar}, Csize_t), tocode, fromcode, inbuf, inbytesleft)
 end
 
 function SDL_memcpy4(dst, src, dwords)
-    ccall((:SDL_memcpy4, libsdl2), Ptr{Cvoid}, (Ptr{Cvoid}, Ptr{Cvoid}, Cint), dst, src, dwords)
+    ccall((:SDL_memcpy4, libsdl2), Ptr{Cvoid}, (Ptr{Cvoid}, Ptr{Cvoid}, Csize_t), dst, src, dwords)
 end
 
 # typedef int ( * SDL_main_func ) ( int argc , char * argv [ ] )
@@ -494,7 +501,7 @@ function SDL_SetMainReady()
     ccall((:SDL_SetMainReady, libsdl2), Cvoid, ())
 end
 
-@enum SDL_AssertState::UInt32 begin
+@cenum SDL_AssertState::UInt32 begin
     SDL_ASSERTION_RETRY = 0
     SDL_ASSERTION_BREAK = 1
     SDL_ASSERTION_ABORT = 2
@@ -601,7 +608,7 @@ function SDL_ClearError()
     ccall((:SDL_ClearError, libsdl2), Cvoid, ())
 end
 
-@enum SDL_errorcode::UInt32 begin
+@cenum SDL_errorcode::UInt32 begin
     SDL_ENOMEM = 0
     SDL_EFREAD = 1
     SDL_EFWRITE = 2
@@ -716,7 +723,7 @@ const SDL_threadID = Culong
 
 const SDL_TLSID = Cuint
 
-@enum SDL_ThreadPriority::UInt32 begin
+@cenum SDL_ThreadPriority::UInt32 begin
     SDL_THREAD_PRIORITY_LOW = 0
     SDL_THREAD_PRIORITY_NORMAL = 1
     SDL_THREAD_PRIORITY_HIGH = 2
@@ -731,7 +738,7 @@ function SDL_CreateThread(fn, name, data)
 end
 
 function SDL_CreateThreadWithStackSize(fn, name, stacksize, data)
-    ccall((:SDL_CreateThreadWithStackSize, libsdl2), Ptr{SDL_Thread}, (SDL_ThreadFunction, Ptr{Cchar}, Cint, Ptr{Cvoid}), fn, name, stacksize, data)
+    ccall((:SDL_CreateThreadWithStackSize, libsdl2), Ptr{SDL_Thread}, (SDL_ThreadFunction, Ptr{Cchar}, Csize_t, Ptr{Cvoid}), fn, name, stacksize, data)
 end
 
 function SDL_GetThreadName(thread)
@@ -771,13 +778,29 @@ function SDL_TLSSet(id, value, destructor)
 end
 
 struct SDL_RWops
-    size::Ptr{Cvoid}
-    seek::Ptr{Cvoid}
-    size_t::Cvoid
-    close::Ptr{Cvoid}
-    type::Uint32
-    var""::__JL_Ctag_197
-    hidden::__JL_Ctag_197
+    data::NTuple{72, UInt8}
+end
+
+function Base.getproperty(x::Ptr{SDL_RWops}, f::Symbol)
+    f === :size && return Ptr{Ptr{Cvoid}}(x + 0)
+    f === :seek && return Ptr{Ptr{Cvoid}}(x + 8)
+    f === :read && return Ptr{Ptr{Cvoid}}(x + 16)
+    f === :write && return Ptr{Ptr{Cvoid}}(x + 24)
+    f === :close && return Ptr{Ptr{Cvoid}}(x + 32)
+    f === :type && return Ptr{Uint32}(x + 40)
+    f === :hidden && return Ptr{__JL_Ctag_245}(x + 48)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::SDL_RWops, f::Symbol)
+    r = Ref{SDL_RWops}(x)
+    ptr = Base.unsafe_convert(Ptr{SDL_RWops}, r)
+    fptr = getproperty(ptr, f)
+    GC.@preserve r unsafe_load(fptr)
+end
+
+function Base.setproperty!(x::Ptr{SDL_RWops}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
 end
 
 function SDL_RWFromFile(file, mode)
@@ -785,7 +808,7 @@ function SDL_RWFromFile(file, mode)
 end
 
 function SDL_RWFromFP(fp, autoclose)
-    ccall((:SDL_RWFromFP, libsdl2), Ptr{SDL_RWops}, (Ptr{Cint}, SDL_bool), fp, autoclose)
+    ccall((:SDL_RWFromFP, libsdl2), Ptr{SDL_RWops}, (Ptr{Libc.FILE}, SDL_bool), fp, autoclose)
 end
 
 function SDL_RWFromMem(mem, size)
@@ -816,12 +839,12 @@ function SDL_RWtell(context)
     ccall((:SDL_RWtell, libsdl2), Sint64, (Ptr{SDL_RWops},), context)
 end
 
-function SDL_RWread()
-    ccall((:SDL_RWread, libsdl2), Cint, ())
+function SDL_RWread(context, ptr, size, maxnum)
+    ccall((:SDL_RWread, libsdl2), Csize_t, (Ptr{SDL_RWops}, Ptr{Cvoid}, Csize_t, Csize_t), context, ptr, size, maxnum)
 end
 
-function SDL_RWwrite()
-    ccall((:SDL_RWwrite, libsdl2), Cint, ())
+function SDL_RWwrite(context, ptr, size, num)
+    ccall((:SDL_RWwrite, libsdl2), Csize_t, (Ptr{SDL_RWops}, Ptr{Cvoid}, Csize_t, Csize_t), context, ptr, size, num)
 end
 
 function SDL_RWclose(context)
@@ -829,11 +852,11 @@ function SDL_RWclose(context)
 end
 
 function SDL_LoadFile_RW(src, datasize, freesrc)
-    ccall((:SDL_LoadFile_RW, libsdl2), Ptr{Cvoid}, (Ptr{SDL_RWops}, Ptr{Cint}, Cint), src, datasize, freesrc)
+    ccall((:SDL_LoadFile_RW, libsdl2), Ptr{Cvoid}, (Ptr{SDL_RWops}, Ptr{Csize_t}, Cint), src, datasize, freesrc)
 end
 
 function SDL_LoadFile(file, datasize)
-    ccall((:SDL_LoadFile, libsdl2), Ptr{Cvoid}, (Ptr{Cchar}, Ptr{Cint}), file, datasize)
+    ccall((:SDL_LoadFile, libsdl2), Ptr{Cvoid}, (Ptr{Cchar}, Ptr{Csize_t}), file, datasize)
 end
 
 function SDL_ReadU8(src)
@@ -864,32 +887,32 @@ function SDL_ReadBE64(src)
     ccall((:SDL_ReadBE64, libsdl2), Uint64, (Ptr{SDL_RWops},), src)
 end
 
-function SDL_WriteU8()
-    ccall((:SDL_WriteU8, libsdl2), Cint, ())
+function SDL_WriteU8(dst, value)
+    ccall((:SDL_WriteU8, libsdl2), Csize_t, (Ptr{SDL_RWops}, Uint8), dst, value)
 end
 
-function SDL_WriteLE16()
-    ccall((:SDL_WriteLE16, libsdl2), Cint, ())
+function SDL_WriteLE16(dst, value)
+    ccall((:SDL_WriteLE16, libsdl2), Csize_t, (Ptr{SDL_RWops}, Uint16), dst, value)
 end
 
-function SDL_WriteBE16()
-    ccall((:SDL_WriteBE16, libsdl2), Cint, ())
+function SDL_WriteBE16(dst, value)
+    ccall((:SDL_WriteBE16, libsdl2), Csize_t, (Ptr{SDL_RWops}, Uint16), dst, value)
 end
 
-function SDL_WriteLE32()
-    ccall((:SDL_WriteLE32, libsdl2), Cint, ())
+function SDL_WriteLE32(dst, value)
+    ccall((:SDL_WriteLE32, libsdl2), Csize_t, (Ptr{SDL_RWops}, Uint32), dst, value)
 end
 
-function SDL_WriteBE32()
-    ccall((:SDL_WriteBE32, libsdl2), Cint, ())
+function SDL_WriteBE32(dst, value)
+    ccall((:SDL_WriteBE32, libsdl2), Csize_t, (Ptr{SDL_RWops}, Uint32), dst, value)
 end
 
-function SDL_WriteLE64()
-    ccall((:SDL_WriteLE64, libsdl2), Cint, ())
+function SDL_WriteLE64(dst, value)
+    ccall((:SDL_WriteLE64, libsdl2), Csize_t, (Ptr{SDL_RWops}, Uint64), dst, value)
 end
 
-function SDL_WriteBE64()
-    ccall((:SDL_WriteBE64, libsdl2), Cint, ())
+function SDL_WriteBE64(dst, value)
+    ccall((:SDL_WriteBE64, libsdl2), Csize_t, (Ptr{SDL_RWops}, Uint64), dst, value)
 end
 
 const SDL_AudioFormat = Uint16
@@ -913,21 +936,21 @@ end
 const SDL_AudioFilter = Ptr{Cvoid}
 
 struct SDL_AudioCVT
-    data::NTuple{132, UInt8}
+    data::NTuple{128, UInt8}
 end
 
 function Base.getproperty(x::Ptr{SDL_AudioCVT}, f::Symbol)
     f === :needed && return Ptr{Cint}(x + 0)
     f === :src_format && return Ptr{SDL_AudioFormat}(x + 4)
-    f === :dst_format && return Ptr{SDL_AudioFormat}(x + 8)
-    f === :rate_incr && return Ptr{Cdouble}(x + 12)
-    f === :buf && return Ptr{Ptr{Uint8}}(x + 20)
-    f === :len && return Ptr{Cint}(x + 28)
-    f === :len_cvt && return Ptr{Cint}(x + 32)
-    f === :len_mult && return Ptr{Cint}(x + 36)
-    f === :len_ratio && return Ptr{Cdouble}(x + 40)
-    f === :filters && return Ptr{NTuple{10, SDL_AudioFilter}}(x + 48)
-    f === :filter_index && return Ptr{Cint}(x + 128)
+    f === :dst_format && return Ptr{SDL_AudioFormat}(x + 6)
+    f === :rate_incr && return Ptr{Cdouble}(x + 8)
+    f === :buf && return Ptr{Ptr{Uint8}}(x + 16)
+    f === :len && return Ptr{Cint}(x + 24)
+    f === :len_cvt && return Ptr{Cint}(x + 28)
+    f === :len_mult && return Ptr{Cint}(x + 32)
+    f === :len_ratio && return Ptr{Cdouble}(x + 36)
+    f === :filters && return Ptr{NTuple{10, SDL_AudioFilter}}(x + 44)
+    f === :filter_index && return Ptr{Cint}(x + 124)
     return getfield(x, f)
 end
 
@@ -980,7 +1003,7 @@ function SDL_OpenAudioDevice(device, iscapture, desired, obtained, allowed_chang
     ccall((:SDL_OpenAudioDevice, libsdl2), SDL_AudioDeviceID, (Ptr{Cchar}, Cint, Ptr{SDL_AudioSpec}, Ptr{SDL_AudioSpec}, Cint), device, iscapture, desired, obtained, allowed_changes)
 end
 
-@enum SDL_AudioStatus::UInt32 begin
+@cenum SDL_AudioStatus::UInt32 begin
     SDL_AUDIO_STOPPED = 0
     SDL_AUDIO_PLAYING = 1
     SDL_AUDIO_PAUSED = 2
@@ -1179,18 +1202,18 @@ function SDL_GetSystemRAM()
 end
 
 function SDL_SIMDGetAlignment()
-    ccall((:SDL_SIMDGetAlignment, libsdl2), Cint, ())
+    ccall((:SDL_SIMDGetAlignment, libsdl2), Csize_t, ())
 end
 
 function SDL_SIMDAlloc(len)
-    ccall((:SDL_SIMDAlloc, libsdl2), Ptr{Cvoid}, (Cint,), len)
+    ccall((:SDL_SIMDAlloc, libsdl2), Ptr{Cvoid}, (Csize_t,), len)
 end
 
 function SDL_SIMDFree(ptr)
     ccall((:SDL_SIMDFree, libsdl2), Cvoid, (Ptr{Cvoid},), ptr)
 end
 
-@enum SDL_PixelType::UInt32 begin
+@cenum SDL_PixelType::UInt32 begin
     SDL_PIXELTYPE_UNKNOWN = 0
     SDL_PIXELTYPE_INDEX1 = 1
     SDL_PIXELTYPE_INDEX4 = 2
@@ -1205,13 +1228,13 @@ end
     SDL_PIXELTYPE_ARRAYF32 = 11
 end
 
-@enum SDL_BitmapOrder::UInt32 begin
+@cenum SDL_BitmapOrder::UInt32 begin
     SDL_BITMAPORDER_NONE = 0
     SDL_BITMAPORDER_4321 = 1
     SDL_BITMAPORDER_1234 = 2
 end
 
-@enum SDL_PackedOrder::UInt32 begin
+@cenum SDL_PackedOrder::UInt32 begin
     SDL_PACKEDORDER_NONE = 0
     SDL_PACKEDORDER_XRGB = 1
     SDL_PACKEDORDER_RGBX = 2
@@ -1223,7 +1246,7 @@ end
     SDL_PACKEDORDER_BGRA = 8
 end
 
-@enum SDL_ArrayOrder::UInt32 begin
+@cenum SDL_ArrayOrder::UInt32 begin
     SDL_ARRAYORDER_NONE = 0
     SDL_ARRAYORDER_RGB = 1
     SDL_ARRAYORDER_RGBA = 2
@@ -1233,7 +1256,7 @@ end
     SDL_ARRAYORDER_ABGR = 6
 end
 
-@enum SDL_PackedLayout::UInt32 begin
+@cenum SDL_PackedLayout::UInt32 begin
     SDL_PACKEDLAYOUT_NONE = 0
     SDL_PACKEDLAYOUT_332 = 1
     SDL_PACKEDLAYOUT_4444 = 2
@@ -1245,7 +1268,7 @@ end
     SDL_PACKEDLAYOUT_1010102 = 8
 end
 
-@enum SDL_PixelFormatEnum::UInt32 begin
+@cenum SDL_PixelFormatEnum::UInt32 begin
     SDL_PIXELFORMAT_UNKNOWN = 0
     SDL_PIXELFORMAT_INDEX1LSB = 286261504
     SDL_PIXELFORMAT_INDEX1MSB = 287310080
@@ -1278,10 +1301,10 @@ end
     SDL_PIXELFORMAT_ABGR8888 = 376840196
     SDL_PIXELFORMAT_BGRA8888 = 377888772
     SDL_PIXELFORMAT_ARGB2101010 = 372711428
-    # SDL_PIXELFORMAT_RGBA32 = 376840196
-    # SDL_PIXELFORMAT_ARGB32 = 377888772
-    # SDL_PIXELFORMAT_BGRA32 = 372645892
-    # SDL_PIXELFORMAT_ABGR32 = 373694468
+    SDL_PIXELFORMAT_RGBA32 = 376840196
+    SDL_PIXELFORMAT_ARGB32 = 377888772
+    SDL_PIXELFORMAT_BGRA32 = 372645892
+    SDL_PIXELFORMAT_ABGR32 = 373694468
     SDL_PIXELFORMAT_YV12 = 842094169
     SDL_PIXELFORMAT_IYUV = 1448433993
     SDL_PIXELFORMAT_YUY2 = 844715353
@@ -1440,7 +1463,7 @@ function SDL_IntersectRectAndLine(rect, X1, Y1, X2, Y2)
     ccall((:SDL_IntersectRectAndLine, libsdl2), SDL_bool, (Ptr{SDL_Rect}, Ptr{Cint}, Ptr{Cint}, Ptr{Cint}, Ptr{Cint}), rect, X1, Y1, X2, Y2)
 end
 
-@enum SDL_BlendMode::UInt32 begin
+@cenum SDL_BlendMode::UInt32 begin
     SDL_BLENDMODE_NONE = 0
     SDL_BLENDMODE_BLEND = 1
     SDL_BLENDMODE_ADD = 2
@@ -1449,7 +1472,7 @@ end
     SDL_BLENDMODE_INVALID = 2147483647
 end
 
-@enum SDL_BlendOperation::UInt32 begin
+@cenum SDL_BlendOperation::UInt32 begin
     SDL_BLENDOPERATION_ADD = 1
     SDL_BLENDOPERATION_SUBTRACT = 2
     SDL_BLENDOPERATION_REV_SUBTRACT = 3
@@ -1457,7 +1480,7 @@ end
     SDL_BLENDOPERATION_MAXIMUM = 5
 end
 
-@enum SDL_BlendFactor::UInt32 begin
+@cenum SDL_BlendFactor::UInt32 begin
     SDL_BLENDFACTOR_ZERO = 1
     SDL_BLENDFACTOR_ONE = 2
     SDL_BLENDFACTOR_SRC_COLOR = 3
@@ -1494,7 +1517,7 @@ end
 # typedef int ( SDLCALL * SDL_blit ) ( struct SDL_Surface * src , SDL_Rect * srcrect , struct SDL_Surface * dst , SDL_Rect * dstrect )
 const SDL_blit = Ptr{Cvoid}
 
-@enum SDL_YUV_CONVERSION_MODE::UInt32 begin
+@cenum SDL_YUV_CONVERSION_MODE::UInt32 begin
     SDL_YUV_CONVERSION_JPEG = 0
     SDL_YUV_CONVERSION_BT601 = 1
     SDL_YUV_CONVERSION_BT709 = 2
@@ -1655,7 +1678,7 @@ end
 
 mutable struct SDL_Window end
 
-@enum SDL_WindowFlags::UInt32 begin
+@cenum SDL_WindowFlags::UInt32 begin
     SDL_WINDOW_FULLSCREEN = 1
     SDL_WINDOW_OPENGL = 2
     SDL_WINDOW_SHOWN = 4
@@ -1679,7 +1702,7 @@ mutable struct SDL_Window end
     SDL_WINDOW_VULKAN = 268435456
 end
 
-@enum SDL_WindowEventID::UInt32 begin
+@cenum SDL_WindowEventID::UInt32 begin
     SDL_WINDOWEVENT_NONE = 0
     SDL_WINDOWEVENT_SHOWN = 1
     SDL_WINDOWEVENT_HIDDEN = 2
@@ -1699,12 +1722,12 @@ end
     SDL_WINDOWEVENT_HIT_TEST = 16
 end
 
-@enum SDL_DisplayEventID::UInt32 begin
+@cenum SDL_DisplayEventID::UInt32 begin
     SDL_DISPLAYEVENT_NONE = 0
     SDL_DISPLAYEVENT_ORIENTATION = 1
 end
 
-@enum SDL_DisplayOrientation::UInt32 begin
+@cenum SDL_DisplayOrientation::UInt32 begin
     SDL_ORIENTATION_UNKNOWN = 0
     SDL_ORIENTATION_LANDSCAPE = 1
     SDL_ORIENTATION_LANDSCAPE_FLIPPED = 2
@@ -1714,7 +1737,7 @@ end
 
 const SDL_GLContext = Ptr{Cvoid}
 
-@enum SDL_GLattr::UInt32 begin
+@cenum SDL_GLattr::UInt32 begin
     SDL_GL_RED_SIZE = 0
     SDL_GL_GREEN_SIZE = 1
     SDL_GL_BLUE_SIZE = 2
@@ -1744,25 +1767,25 @@ const SDL_GLContext = Ptr{Cvoid}
     SDL_GL_CONTEXT_NO_ERROR = 26
 end
 
-@enum SDL_GLprofile::UInt32 begin
+@cenum SDL_GLprofile::UInt32 begin
     SDL_GL_CONTEXT_PROFILE_CORE = 1
     SDL_GL_CONTEXT_PROFILE_COMPATIBILITY = 2
     SDL_GL_CONTEXT_PROFILE_ES = 4
 end
 
-@enum SDL_GLcontextFlag::UInt32 begin
+@cenum SDL_GLcontextFlag::UInt32 begin
     SDL_GL_CONTEXT_DEBUG_FLAG = 1
     SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG = 2
     SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG = 4
     SDL_GL_CONTEXT_RESET_ISOLATION_FLAG = 8
 end
 
-@enum SDL_GLcontextReleaseFlag::UInt32 begin
+@cenum SDL_GLcontextReleaseFlag::UInt32 begin
     SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE = 0
     SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH = 1
 end
 
-@enum SDL_GLContextResetNotification::UInt32 begin
+@cenum SDL_GLContextResetNotification::UInt32 begin
     SDL_GL_CONTEXT_RESET_NO_NOTIFICATION = 0
     SDL_GL_CONTEXT_RESET_LOSE_CONTEXT = 1
 end
@@ -2015,7 +2038,7 @@ function SDL_GetWindowGammaRamp(window, red, green, blue)
     ccall((:SDL_GetWindowGammaRamp, libsdl2), Cint, (Ptr{SDL_Window}, Ptr{Uint16}, Ptr{Uint16}, Ptr{Uint16}), window, red, green, blue)
 end
 
-@enum SDL_HitTestResult::UInt32 begin
+@cenum SDL_HitTestResult::UInt32 begin
     SDL_HITTEST_NORMAL = 0
     SDL_HITTEST_DRAGGABLE = 1
     SDL_HITTEST_RESIZE_TOPLEFT = 2
@@ -2115,7 +2138,7 @@ function SDL_GL_DeleteContext(context)
     ccall((:SDL_GL_DeleteContext, libsdl2), Cvoid, (SDL_GLContext,), context)
 end
 
-@enum SDL_Scancode::UInt32 begin
+@cenum SDL_Scancode::UInt32 begin
     SDL_SCANCODE_UNKNOWN = 0
     SDL_SCANCODE_A = 4
     SDL_SCANCODE_B = 5
@@ -2364,7 +2387,7 @@ end
 
 const SDL_Keycode = Sint32
 
-@enum SDL_KeyCode::UInt32 begin
+@cenum SDL_KeyCode::UInt32 begin
     SDLK_UNKNOWN = 0
     SDLK_RETURN = 13
     SDLK_ESCAPE = 27
@@ -2607,7 +2630,7 @@ const SDL_Keycode = Sint32
     SDLK_AUDIOFASTFORWARD = 1073742110
 end
 
-@enum SDL_Keymod::UInt32 begin
+@cenum SDL_Keymod::UInt32 begin
     KMOD_NONE = 0
     KMOD_LSHIFT = 1
     KMOD_RSHIFT = 2
@@ -2696,7 +2719,7 @@ end
 
 mutable struct SDL_Cursor end
 
-@enum SDL_SystemCursor::UInt32 begin
+@cenum SDL_SystemCursor::UInt32 begin
     SDL_SYSTEM_CURSOR_ARROW = 0
     SDL_SYSTEM_CURSOR_IBEAM = 1
     SDL_SYSTEM_CURSOR_WAIT = 2
@@ -2712,7 +2735,7 @@ mutable struct SDL_Cursor end
     SDL_NUM_SYSTEM_CURSORS = 12
 end
 
-@enum SDL_MouseWheelDirection::UInt32 begin
+@cenum SDL_MouseWheelDirection::UInt32 begin
     SDL_MOUSEWHEEL_NORMAL = 0
     SDL_MOUSEWHEEL_FLIPPED = 1
 end
@@ -2795,7 +2818,7 @@ end
 
 const SDL_JoystickID = Sint32
 
-@enum SDL_JoystickType::UInt32 begin
+@cenum SDL_JoystickType::UInt32 begin
     SDL_JOYSTICK_TYPE_UNKNOWN = 0
     SDL_JOYSTICK_TYPE_GAMECONTROLLER = 1
     SDL_JOYSTICK_TYPE_WHEEL = 2
@@ -2808,7 +2831,7 @@ const SDL_JoystickID = Sint32
     SDL_JOYSTICK_TYPE_THROTTLE = 9
 end
 
-@enum SDL_JoystickPowerLevel::Int32 begin
+@cenum SDL_JoystickPowerLevel::Int32 begin
     SDL_JOYSTICK_POWER_UNKNOWN = -1
     SDL_JOYSTICK_POWER_EMPTY = 0
     SDL_JOYSTICK_POWER_LOW = 1
@@ -2982,7 +3005,7 @@ mutable struct _SDL_GameController end
 
 const SDL_GameController = _SDL_GameController
 
-@enum SDL_GameControllerType::UInt32 begin
+@cenum SDL_GameControllerType::UInt32 begin
     SDL_CONTROLLER_TYPE_UNKNOWN = 0
     SDL_CONTROLLER_TYPE_XBOX360 = 1
     SDL_CONTROLLER_TYPE_XBOXONE = 2
@@ -2991,7 +3014,7 @@ const SDL_GameController = _SDL_GameController
     SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO = 5
 end
 
-@enum SDL_GameControllerBindType::UInt32 begin
+@cenum SDL_GameControllerBindType::UInt32 begin
     SDL_CONTROLLER_BINDTYPE_NONE = 0
     SDL_CONTROLLER_BINDTYPE_BUTTON = 1
     SDL_CONTROLLER_BINDTYPE_AXIS = 2
@@ -3004,7 +3027,7 @@ end
 
 function Base.getproperty(x::Ptr{SDL_GameControllerButtonBind}, f::Symbol)
     f === :bindType && return Ptr{SDL_GameControllerBindType}(x + 0)
-    f === :value && return Ptr{__JL_Ctag_201}(x + 4)
+    f === :value && return Ptr{__JL_Ctag_249}(x + 4)
     return getfield(x, f)
 end
 
@@ -3115,7 +3138,7 @@ function SDL_GameControllerUpdate()
     ccall((:SDL_GameControllerUpdate, libsdl2), Cvoid, ())
 end
 
-@enum SDL_GameControllerAxis::Int32 begin
+@cenum SDL_GameControllerAxis::Int32 begin
     SDL_CONTROLLER_AXIS_INVALID = -1
     SDL_CONTROLLER_AXIS_LEFTX = 0
     SDL_CONTROLLER_AXIS_LEFTY = 1
@@ -3142,7 +3165,7 @@ function SDL_GameControllerGetAxis(gamecontroller, axis)
     ccall((:SDL_GameControllerGetAxis, libsdl2), Sint16, (Ptr{SDL_GameController}, SDL_GameControllerAxis), gamecontroller, axis)
 end
 
-@enum SDL_GameControllerButton::Int32 begin
+@cenum SDL_GameControllerButton::Int32 begin
     SDL_CONTROLLER_BUTTON_INVALID = -1
     SDL_CONTROLLER_BUTTON_A = 0
     SDL_CONTROLLER_BUTTON_B = 1
@@ -3190,7 +3213,7 @@ const SDL_TouchID = Sint64
 
 const SDL_FingerID = Sint64
 
-@enum SDL_TouchDeviceType::Int32 begin
+@cenum SDL_TouchDeviceType::Int32 begin
     SDL_TOUCH_DEVICE_INVALID = -1
     SDL_TOUCH_DEVICE_DIRECT = 0
     SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE = 1
@@ -3242,7 +3265,7 @@ function SDL_LoadDollarTemplates(touchId, src)
     ccall((:SDL_LoadDollarTemplates, libsdl2), Cint, (SDL_TouchID, Ptr{SDL_RWops}), touchId, src)
 end
 
-@enum SDL_EventType::UInt32 begin
+@cenum SDL_EventType::UInt32 begin
     SDL_FIRSTEVENT = 0
     SDL_QUIT = 256
     SDL_APP_TERMINATING = 257
@@ -3552,7 +3575,7 @@ struct SDL_SysWMEvent
 end
 
 struct SDL_Event
-    data::NTuple{224, UInt8}
+    data::NTuple{56, UInt8}
 end
 
 function Base.getproperty(x::Ptr{SDL_Event}, f::Symbol)
@@ -3598,13 +3621,13 @@ function Base.setproperty!(x::Ptr{SDL_Event}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
-const SDL_compile_time_assert_SDL_Event = Cint
+const SDL_compile_time_assert_SDL_Event = NTuple{1, Cint}
 
 function SDL_PumpEvents()
     ccall((:SDL_PumpEvents, libsdl2), Cvoid, ())
 end
 
-@enum SDL_eventaction::UInt32 begin
+@cenum SDL_eventaction::UInt32 begin
     SDL_ADDEVENT = 0
     SDL_PEEKEVENT = 1
     SDL_GETEVENT = 2
@@ -3780,7 +3803,7 @@ struct SDL_HapticCustom
 end
 
 struct SDL_HapticEffect
-    data::NTuple{112, UInt8}
+    data::NTuple{72, UInt8}
 end
 
 function Base.getproperty(x::Ptr{SDL_HapticEffect}, f::Symbol)
@@ -3925,7 +3948,7 @@ function SDL_HapticRumbleStop(haptic)
     ccall((:SDL_HapticRumbleStop, libsdl2), Cint, (Ptr{SDL_Haptic},), haptic)
 end
 
-@enum SDL_HintPriority::UInt32 begin
+@cenum SDL_HintPriority::UInt32 begin
     SDL_HINT_DEFAULT = 0
     SDL_HINT_NORMAL = 1
     SDL_HINT_OVERRIDE = 2
@@ -3974,7 +3997,7 @@ function SDL_UnloadObject(handle)
     ccall((:SDL_UnloadObject, libsdl2), Cvoid, (Ptr{Cvoid},), handle)
 end
 
-@enum SDL_LogCategory::UInt32 begin
+@cenum SDL_LogCategory::UInt32 begin
     SDL_LOG_CATEGORY_APPLICATION = 0
     SDL_LOG_CATEGORY_ERROR = 1
     SDL_LOG_CATEGORY_ASSERT = 2
@@ -3997,7 +4020,7 @@ end
     SDL_LOG_CATEGORY_CUSTOM = 19
 end
 
-@enum SDL_LogPriority::UInt32 begin
+@cenum SDL_LogPriority::UInt32 begin
     SDL_LOG_PRIORITY_VERBOSE = 1
     SDL_LOG_PRIORITY_DEBUG = 2
     SDL_LOG_PRIORITY_INFO = 3
@@ -4023,10 +4046,6 @@ function SDL_LogResetPriorities()
     ccall((:SDL_LogResetPriorities, libsdl2), Cvoid, ())
 end
 
-function SDL_LogMessageV(category, priority, fmt, ap)
-    ccall((:SDL_LogMessageV, libsdl2), Cvoid, (Cint, SDL_LogPriority, Ptr{Cchar}, Cint), category, priority, fmt, ap)
-end
-
 # typedef void ( SDLCALL * SDL_LogOutputFunction ) ( void * userdata , int category , SDL_LogPriority priority , const char * message )
 const SDL_LogOutputFunction = Ptr{Cvoid}
 
@@ -4038,7 +4057,7 @@ function SDL_LogSetOutputFunction(callback, userdata)
     ccall((:SDL_LogSetOutputFunction, libsdl2), Cvoid, (SDL_LogOutputFunction, Ptr{Cvoid}), callback, userdata)
 end
 
-@enum SDL_MessageBoxFlags::UInt32 begin
+@cenum SDL_MessageBoxFlags::UInt32 begin
     SDL_MESSAGEBOX_ERROR = 16
     SDL_MESSAGEBOX_WARNING = 32
     SDL_MESSAGEBOX_INFORMATION = 64
@@ -4046,7 +4065,7 @@ end
     SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT = 256
 end
 
-@enum SDL_MessageBoxButtonFlags::UInt32 begin
+@cenum SDL_MessageBoxButtonFlags::UInt32 begin
     SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT = 1
     SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT = 2
 end
@@ -4063,7 +4082,7 @@ struct SDL_MessageBoxColor
     b::Uint8
 end
 
-@enum SDL_MessageBoxColorType::UInt32 begin
+@cenum SDL_MessageBoxColorType::UInt32 begin
     SDL_MESSAGEBOX_COLOR_BACKGROUND = 0
     SDL_MESSAGEBOX_COLOR_TEXT = 1
     SDL_MESSAGEBOX_COLOR_BUTTON_BORDER = 2
@@ -4104,7 +4123,7 @@ function SDL_Metal_DestroyView(view)
     ccall((:SDL_Metal_DestroyView, libsdl2), Cvoid, (SDL_MetalView,), view)
 end
 
-@enum SDL_PowerState::UInt32 begin
+@cenum SDL_PowerState::UInt32 begin
     SDL_POWERSTATE_UNKNOWN = 0
     SDL_POWERSTATE_ON_BATTERY = 1
     SDL_POWERSTATE_NO_BATTERY = 2
@@ -4116,7 +4135,7 @@ function SDL_GetPowerInfo(secs, pct)
     ccall((:SDL_GetPowerInfo, libsdl2), SDL_PowerState, (Ptr{Cint}, Ptr{Cint}), secs, pct)
 end
 
-@enum SDL_RendererFlags::UInt32 begin
+@cenum SDL_RendererFlags::UInt32 begin
     SDL_RENDERER_SOFTWARE = 1
     SDL_RENDERER_ACCELERATED = 2
     SDL_RENDERER_PRESENTVSYNC = 4
@@ -4132,25 +4151,25 @@ struct SDL_RendererInfo
     max_texture_height::Cint
 end
 
-@enum SDL_ScaleMode::UInt32 begin
+@cenum SDL_ScaleMode::UInt32 begin
     SDL_ScaleModeNearest = 0
     SDL_ScaleModeLinear = 1
     SDL_ScaleModeBest = 2
 end
 
-@enum SDL_TextureAccess::UInt32 begin
+@cenum SDL_TextureAccess::UInt32 begin
     SDL_TEXTUREACCESS_STATIC = 0
     SDL_TEXTUREACCESS_STREAMING = 1
     SDL_TEXTUREACCESS_TARGET = 2
 end
 
-@enum SDL_TextureModulate::UInt32 begin
+@cenum SDL_TextureModulate::UInt32 begin
     SDL_TEXTUREMODULATE_NONE = 0
     SDL_TEXTUREMODULATE_COLOR = 1
     SDL_TEXTUREMODULATE_ALPHA = 2
 end
 
-@enum SDL_RendererFlip::UInt32 begin
+@cenum SDL_RendererFlip::UInt32 begin
     SDL_FLIP_NONE = 0
     SDL_FLIP_HORIZONTAL = 1
     SDL_FLIP_VERTICAL = 2
@@ -4454,7 +4473,7 @@ const SDL_Sensor = _SDL_Sensor
 
 const SDL_SensorID = Sint32
 
-@enum SDL_SensorType::Int32 begin
+@cenum SDL_SensorType::Int32 begin
     SDL_SENSOR_INVALID = -1
     SDL_SENSOR_UNKNOWN = 0
     SDL_SENSOR_ACCEL = 1
@@ -4525,7 +4544,7 @@ function SDL_IsShapedWindow(window)
     ccall((:SDL_IsShapedWindow, libsdl2), SDL_bool, (Ptr{SDL_Window},), window)
 end
 
-@enum WindowShapeMode::UInt32 begin
+@cenum WindowShapeMode::UInt32 begin
     ShapeModeDefault = 0
     ShapeModeBinarizeAlpha = 1
     ShapeModeReverseBinarizeAlpha = 2
@@ -4533,7 +4552,7 @@ end
 end
 
 struct SDL_WindowShapeParams
-    data::NTuple{16, UInt8}
+    data::NTuple{4, UInt8}
 end
 
 function Base.getproperty(x::Ptr{SDL_WindowShapeParams}, f::Symbol)
@@ -4665,7 +4684,7 @@ function Mix_Linked_Version()
     ccall((:Mix_Linked_Version, libsdl2_mixer), Ptr{SDL_version}, ())
 end
 
-@enum MIX_InitFlags::UInt32 begin
+@cenum MIX_InitFlags::UInt32 begin
     MIX_INIT_FLAC = 1
     MIX_INIT_MOD = 2
     MIX_INIT_MP3 = 8
@@ -4689,13 +4708,13 @@ struct Mix_Chunk
     volume::Uint8
 end
 
-@enum Mix_Fading::UInt32 begin
+@cenum Mix_Fading::UInt32 begin
     MIX_NO_FADING = 0
     MIX_FADING_OUT = 1
     MIX_FADING_IN = 2
 end
 
-@enum Mix_MusicType::UInt32 begin
+@cenum Mix_MusicType::UInt32 begin
     MUS_NONE = 0
     MUS_CMD = 1
     MUS_WAV = 2
@@ -5015,7 +5034,7 @@ function IMG_Linked_Version()
     ccall((:IMG_Linked_Version, libsdl2_image), Ptr{SDL_version}, ())
 end
 
-@enum IMG_InitFlags::UInt32 begin
+@cenum IMG_InitFlags::UInt32 begin
     IMG_INIT_JPG = 1
     IMG_INIT_PNG = 2
     IMG_INIT_TIF = 4
@@ -5394,144 +5413,137 @@ function TTF_GetFontKerningSizeGlyphs(font, previous_ch, ch)
     ccall((:TTF_GetFontKerningSizeGlyphs, libsdl2_ttf), Cint, (Ptr{TTF_Font}, Uint16, Uint16), font, previous_ch, ch)
 end
 
-struct __JL_Ctag_197
-    data::NTuple{1, UInt8}
+struct __JL_Ctag_245
+    data::NTuple{24, UInt8}
 end
 
-function Base.getproperty(x::Ptr{__JL_Ctag_197}, f::Symbol)
-    f === :autoclose && return (Ptr{SDL_bool}(x + 0), -1, -1)
-    f === :fp && return (Ptr{Ptr{Cint}}(x + 0), -1, -1)
-    f === :stdio && return (Ptr{__JL_Ctag_198}(x + 0), -1, -1)
-    f === :base && return (Ptr{Ptr{Uint8}}(x + 0), -1, -1)
-    f === :here && return (Ptr{Ptr{Uint8}}(x + 0), -1, -1)
-    f === :stop && return (Ptr{Ptr{Uint8}}(x + 0), -1, -1)
-    f === :mem && return (Ptr{__JL_Ctag_199}(x + 0), -1, -1)
-    f === :data1 && return (Ptr{Ptr{Cvoid}}(x + 0), -1, -1)
-    f === :data2 && return (Ptr{Ptr{Cvoid}}(x + 0), -1, -1)
-    f === :unknown && return (Ptr{__JL_Ctag_200}(x + 0), -1, -1)
+function Base.getproperty(x::Ptr{__JL_Ctag_245}, f::Symbol)
+    f === :stdio && return Ptr{__JL_Ctag_246}(x + 0)
+    f === :mem && return Ptr{__JL_Ctag_247}(x + 0)
+    f === :unknown && return Ptr{__JL_Ctag_248}(x + 0)
     return getfield(x, f)
 end
 
-function Base.getproperty(x::__JL_Ctag_197, f::Symbol)
-    r = Ref{__JL_Ctag_197}(x)
-    ptr = Base.unsafe_convert(Ptr{__JL_Ctag_197}, r)
+function Base.getproperty(x::__JL_Ctag_245, f::Symbol)
+    r = Ref{__JL_Ctag_245}(x)
+    ptr = Base.unsafe_convert(Ptr{__JL_Ctag_245}, r)
     fptr = getproperty(ptr, f)
     GC.@preserve r unsafe_load(fptr)
 end
 
-function Base.setproperty!(x::Ptr{__JL_Ctag_197}, f::Symbol, v)
+function Base.setproperty!(x::Ptr{__JL_Ctag_245}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
-struct __JL_Ctag_198
+struct __JL_Ctag_246
     autoclose::SDL_bool
-    fp::Ptr{Cint}
+    fp::Ptr{Libc.FILE}
 end
 
-function Base.getproperty(x::Ptr{__JL_Ctag_198}, f::Symbol)
-    f === :autoclose && return (Ptr{SDL_bool}(x + 0), -1, -1)
-    f === :fp && return (Ptr{Ptr{Cint}}(x + 0), -1, -1)
+function Base.getproperty(x::Ptr{__JL_Ctag_246}, f::Symbol)
+    f === :autoclose && return Ptr{SDL_bool}(x + 0)
+    f === :fp && return Ptr{Ptr{Libc.FILE}}(x + 8)
     return getfield(x, f)
 end
 
-function Base.getproperty(x::__JL_Ctag_198, f::Symbol)
-    r = Ref{__JL_Ctag_198}(x)
-    ptr = Base.unsafe_convert(Ptr{__JL_Ctag_198}, r)
+function Base.getproperty(x::__JL_Ctag_246, f::Symbol)
+    r = Ref{__JL_Ctag_246}(x)
+    ptr = Base.unsafe_convert(Ptr{__JL_Ctag_246}, r)
     fptr = getproperty(ptr, f)
     GC.@preserve r unsafe_load(fptr)
 end
 
-function Base.setproperty!(x::Ptr{__JL_Ctag_198}, f::Symbol, v)
+function Base.setproperty!(x::Ptr{__JL_Ctag_246}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
-struct __JL_Ctag_199
+struct __JL_Ctag_247
     base::Ptr{Uint8}
     here::Ptr{Uint8}
     stop::Ptr{Uint8}
 end
 
-function Base.getproperty(x::Ptr{__JL_Ctag_199}, f::Symbol)
+function Base.getproperty(x::Ptr{__JL_Ctag_247}, f::Symbol)
     f === :base && return Ptr{Ptr{Uint8}}(x + 0)
     f === :here && return Ptr{Ptr{Uint8}}(x + 8)
     f === :stop && return Ptr{Ptr{Uint8}}(x + 16)
     return getfield(x, f)
 end
 
-function Base.getproperty(x::__JL_Ctag_199, f::Symbol)
-    r = Ref{__JL_Ctag_199}(x)
-    ptr = Base.unsafe_convert(Ptr{__JL_Ctag_199}, r)
+function Base.getproperty(x::__JL_Ctag_247, f::Symbol)
+    r = Ref{__JL_Ctag_247}(x)
+    ptr = Base.unsafe_convert(Ptr{__JL_Ctag_247}, r)
     fptr = getproperty(ptr, f)
     GC.@preserve r unsafe_load(fptr)
 end
 
-function Base.setproperty!(x::Ptr{__JL_Ctag_199}, f::Symbol, v)
+function Base.setproperty!(x::Ptr{__JL_Ctag_247}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
-struct __JL_Ctag_200
+struct __JL_Ctag_248
     data1::Ptr{Cvoid}
     data2::Ptr{Cvoid}
 end
 
-function Base.getproperty(x::Ptr{__JL_Ctag_200}, f::Symbol)
+function Base.getproperty(x::Ptr{__JL_Ctag_248}, f::Symbol)
     f === :data1 && return Ptr{Ptr{Cvoid}}(x + 0)
     f === :data2 && return Ptr{Ptr{Cvoid}}(x + 8)
     return getfield(x, f)
 end
 
-function Base.getproperty(x::__JL_Ctag_200, f::Symbol)
-    r = Ref{__JL_Ctag_200}(x)
-    ptr = Base.unsafe_convert(Ptr{__JL_Ctag_200}, r)
+function Base.getproperty(x::__JL_Ctag_248, f::Symbol)
+    r = Ref{__JL_Ctag_248}(x)
+    ptr = Base.unsafe_convert(Ptr{__JL_Ctag_248}, r)
     fptr = getproperty(ptr, f)
     GC.@preserve r unsafe_load(fptr)
 end
 
-function Base.setproperty!(x::Ptr{__JL_Ctag_200}, f::Symbol, v)
+function Base.setproperty!(x::Ptr{__JL_Ctag_248}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
-struct __JL_Ctag_201
+struct __JL_Ctag_249
     data::NTuple{8, UInt8}
 end
 
-function Base.getproperty(x::Ptr{__JL_Ctag_201}, f::Symbol)
+function Base.getproperty(x::Ptr{__JL_Ctag_249}, f::Symbol)
     f === :button && return Ptr{Cint}(x + 0)
     f === :axis && return Ptr{Cint}(x + 0)
-    f === :hat && return Ptr{__JL_Ctag_202}(x + 0)
+    f === :hat && return Ptr{__JL_Ctag_250}(x + 0)
     return getfield(x, f)
 end
 
-function Base.getproperty(x::__JL_Ctag_201, f::Symbol)
-    r = Ref{__JL_Ctag_201}(x)
-    ptr = Base.unsafe_convert(Ptr{__JL_Ctag_201}, r)
+function Base.getproperty(x::__JL_Ctag_249, f::Symbol)
+    r = Ref{__JL_Ctag_249}(x)
+    ptr = Base.unsafe_convert(Ptr{__JL_Ctag_249}, r)
     fptr = getproperty(ptr, f)
     GC.@preserve r unsafe_load(fptr)
 end
 
-function Base.setproperty!(x::Ptr{__JL_Ctag_201}, f::Symbol, v)
+function Base.setproperty!(x::Ptr{__JL_Ctag_249}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
-struct __JL_Ctag_202
+struct __JL_Ctag_250
     hat::Cint
     hat_mask::Cint
 end
 
-function Base.getproperty(x::Ptr{__JL_Ctag_202}, f::Symbol)
+function Base.getproperty(x::Ptr{__JL_Ctag_250}, f::Symbol)
     f === :hat && return Ptr{Cint}(x + 0)
     f === :hat_mask && return Ptr{Cint}(x + 4)
     return getfield(x, f)
 end
 
-function Base.getproperty(x::__JL_Ctag_202, f::Symbol)
-    r = Ref{__JL_Ctag_202}(x)
-    ptr = Base.unsafe_convert(Ptr{__JL_Ctag_202}, r)
+function Base.getproperty(x::__JL_Ctag_250, f::Symbol)
+    r = Ref{__JL_Ctag_250}(x)
+    ptr = Base.unsafe_convert(Ptr{__JL_Ctag_250}, r)
     fptr = getproperty(ptr, f)
     GC.@preserve r unsafe_load(fptr)
 end
 
-function Base.setproperty!(x::Ptr{__JL_Ctag_202}, f::Symbol, v)
+function Base.setproperty!(x::Ptr{__JL_Ctag_250}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
@@ -5543,7 +5555,7 @@ const __MACOSX__ = 1
 
 # Skipping MacroDefinition: DECLSPEC __attribute__ ( ( visibility ( "default" ) ) )
 
-const SDL_INLINE = __inline__
+# Skipping MacroDefinition: SDL_INLINE __inline__
 
 # Skipping MacroDefinition: SDL_FORCE_INLINE __attribute__ ( ( always_inline ) ) static __inline__
 
@@ -5775,25 +5787,19 @@ const SDL_FILESYSTEM_COCOA = 1
 
 const SDL_ASSEMBLY_ROUTINES = 1
 
-const SDL_MAX_SINT8 = Sint8(Float32(0x07))
+const SDL_MAX_SINT8 = Sint8(0x7f)
 
-const SDL_MIN_SINT8 = Sint8(Float32(~0x07))
-
-const SDL_MAX_UINT8 = Uint8(Float32(0x0f))
+const SDL_MAX_UINT8 = Uint8(0xff)
 
 const SDL_MIN_UINT8 = Uint8(0x00)
 
-const SDL_MAX_SINT16 = Sint16(Float32(0x07ff))
+const SDL_MAX_SINT16 = Sint16(0x7fff)
 
-const SDL_MIN_SINT16 = Sint16(Float32(~0x07ff))
-
-const SDL_MAX_UINT16 = Uint16(Float32(0x0fff))
+const SDL_MAX_UINT16 = Uint16(0xffff)
 
 const SDL_MIN_UINT16 = Uint16(0x0000)
 
-const SDL_MAX_SINT32 = Sint32(Float32(0x07ffffff))
-
-const SDL_MIN_SINT32 = Sint32(Float32(~0x07ffffff))
+const SDL_MAX_SINT32 = Sint32(0x7fffffff)
 
 const SDL_MAX_UINT32 = Uint32(Cuint(0xffffffff))
 
@@ -5801,25 +5807,15 @@ const SDL_MIN_UINT32 = Uint32(0x00000000)
 
 const SDL_MAX_SINT64 = Sint64(Clonglong(0x7fffffffffffffff))
 
-const SDL_MIN_SINT64 = Sint64(Clonglong(~0x7fffffffffffffff))
-
 const SDL_MAX_UINT64 = Uint64(Culonglong(0xffffffffffffffff))
 
 const SDL_MIN_UINT64 = Uint64(Culonglong(0x0000000000000000))
 
 const SDL_PRIs64 = "lld"
 
-const SDL_ICONV_ERROR = size_t - 1
-
-const SDL_ICONV_E2BIG = size_t - 2
-
-const SDL_ICONV_EILSEQ = size_t - 3
-
-const SDL_ICONV_EINVAL = size_t - 4
-
 const SDL_ASSERT_LEVEL = 2
 
-const SDL_FUNCTION = __func__
+# Skipping MacroDefinition: SDL_FUNCTION __func__
 
 const SDL_NULL_WHILE_LOOP_CONDITION = 0
 
@@ -5855,7 +5851,7 @@ const RW_SEEK_CUR = 1
 
 const RW_SEEK_END = 2
 
-const SDL_AUDIO_MASK_BITSIZE = Float32(0x0f)
+const SDL_AUDIO_MASK_BITSIZE = 0xff
 
 const SDL_AUDIO_MASK_DATATYPE = 1 << 8
 
@@ -5939,9 +5935,13 @@ const SDL_BlitScaled = SDL_UpperBlitScaled
 
 const SDL_WINDOWPOS_UNDEFINED_MASK = Cuint(0x1fff0000)
 
+SDL_WINDOWPOS_UNDEFINED_DISPLAY(X) = SDL_WINDOWPOS_UNDEFINED_MASK | X
+
 const SDL_WINDOWPOS_UNDEFINED = SDL_WINDOWPOS_UNDEFINED_DISPLAY(0)
 
 const SDL_WINDOWPOS_CENTERED_MASK = Cuint(0x2fff0000)
+
+SDL_WINDOWPOS_CENTERED_DISPLAY(X) = SDL_WINDOWPOS_CENTERED_MASK | X
 
 const SDL_WINDOWPOS_CENTERED = SDL_WINDOWPOS_CENTERED_DISPLAY(0)
 
@@ -5954,6 +5954,8 @@ const KMOD_SHIFT = KMOD_LSHIFT | KMOD_RSHIFT
 const KMOD_ALT = KMOD_LALT | KMOD_RALT
 
 const KMOD_GUI = KMOD_LGUI | KMOD_RGUI
+
+SDL_BUTTON(X) = 1 << (X - 1)
 
 const SDL_BUTTON_LEFT = 1
 
@@ -5996,8 +5998,6 @@ const SDL_HAT_RIGHTDOWN = SDL_HAT_RIGHT | SDL_HAT_DOWN
 const SDL_HAT_LEFTUP = SDL_HAT_LEFT | SDL_HAT_UP
 
 const SDL_HAT_LEFTDOWN = SDL_HAT_LEFT | SDL_HAT_DOWN
-
-const SDL_TOUCH_MOUSEID = Uint32(-1)
 
 const SDL_MOUSE_TOUCHID = Sint64(-1)
 
@@ -6255,6 +6255,8 @@ const SDL_MINOR_VERSION = 0
 
 const SDL_PATCHLEVEL = 12
 
+SDL_VERSIONNUM(X, Y, Z) = X * 1000 + Y * 100 + Z
+
 const SDL_COMPILEDVERSION = SDL_VERSIONNUM(SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL)
 
 const SDL_INIT_TIMER = Cuint(0x00000001)
@@ -6327,7 +6329,7 @@ const TTF_PATCHLEVEL = SDL_TTF_PATCHLEVEL
 
 const SDL_TTF_COMPILEDVERSION = SDL_VERSIONNUM(SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, SDL_TTF_PATCHLEVEL)
 
-const UNICODE_BOM_NATIVE = Float32(0x0fef)
+const UNICODE_BOM_NATIVE = 0xfeff
 
 const UNICODE_BOM_SWAPPED = 0xfffe
 

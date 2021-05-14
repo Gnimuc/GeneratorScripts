@@ -136,9 +136,9 @@ uuid = "8f36deef-c2a5-5394-99ed-8e07531fb29a"
 
 [[libsixel_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "cdb8218068de736f93840a8a2a9b507ca0765afc"
+git-tree-sha1 = "78736dab31ae7a53540a6b752efc61f77b304c5b"
 uuid = "075b6546-f08a-558a-be8f-8157d0f608a5"
-version = "1.8.6+0"
+version = "1.8.6+1"
 
 [[nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]

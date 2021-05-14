@@ -27,38 +27,9 @@ sdl_h = joinpath(local_include_dir, "SDL2", "SDL.h")
 
 options = load_options(joinpath(@__DIR__, "generator.toml"))
 
-args = ["-I$local_include_dir"]
-
-@static if Sys.iswindows()
-    include("../../windows.jl")
-    push!(args, "--sysroot=$mingw_sys", "-I$mingw_inc")
-end
+args = get_default_args()
+push!(args, "-I$local_include_dir")
 
 ctx = create_context([sdl_h, sdl_mixer_h, sdl_image_h, sdl_ttf_h], args, options)
 
-build!(ctx, BUILDSTAGE_NO_PRINTING)
-
-for node in get_nodes(ctx.dag)
-    file = get_filename(node.cursor)
-    if file == sdl_mixer_h
-        Generators.is_function(node) || continue
-        if !Generators.is_variadic_function(node)
-            expr = node.exprs[1]
-            expr.args[2].args[1].args[2].args[2] = :libsdl2_mixer
-        end
-    elseif file == sdl_image_h
-        Generators.is_function(node) || continue
-        if !Generators.is_variadic_function(node)
-            expr = node.exprs[1]
-            expr.args[2].args[1].args[2].args[2] = :libsdl2_image
-        end
-    elseif file == sdl_ttf_h
-        Generators.is_function(node) || continue
-        if !Generators.is_variadic_function(node)
-            expr = node.exprs[1]
-            expr.args[2].args[1].args[2].args[2] = :libsdl2_ttf
-        end
-    end
-end
-
-build!(ctx, BUILDSTAGE_PRINTING_ONLY)
+build!(ctx)
