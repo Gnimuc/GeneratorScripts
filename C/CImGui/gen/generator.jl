@@ -1,5 +1,5 @@
 using Clang.Generators
-using CImGui.LibCImGui.CImGui_jll
+using CImGui_jll
 
 cd(@__DIR__)
 

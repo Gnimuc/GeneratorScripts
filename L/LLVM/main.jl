@@ -4,6 +4,7 @@ cd(@__DIR__)
 Pkg.activate(@__DIR__)
 Pkg.develop("Clang")
 Pkg.instantiate()
+Pkg.status()
 
 # run generator
 include("generator.jl")

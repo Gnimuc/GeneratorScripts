@@ -1,6 +1,6 @@
 using Clang
 using Clang.Generators
-using CSFML.LibCSFML.CSFML_jll
+using CSFML_jll
 
 cd(@__DIR__)
 
