@@ -1,3 +1,9 @@
+const __darwin_socklen_t = UInt32
+
+const __darwin_time_t = Clong
+
+const time_t = __darwin_time_t
+
 mutable struct fd_set
     fds_bits::NTuple{32, Int32}
     fd_set() = new()
@@ -5,19 +11,13 @@ end
 
 const sa_family_t = UInt8
 
+const socklen_t = __darwin_socklen_t
+
 struct sockaddr
     sa_len::UInt8
     sa_family::sa_family_t
     sa_data::NTuple{14, Cchar}
 end
-
-const __darwin_time_t = Clong
-
-const time_t = __darwin_time_t
-
-const __darwin_socklen_t = UInt32
-
-const socklen_t = __darwin_socklen_t
 
 const curl_socklen_t = socklen_t
 

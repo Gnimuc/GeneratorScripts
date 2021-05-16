@@ -1,3 +1,11 @@
+const __time_t = Int64
+
+const __sa_family_t = UInt8
+
+const __socklen_t = UInt32
+
+const time_t = __time_t
+
 const __fd_mask = Culong
 
 mutable struct fd_set
@@ -5,23 +13,15 @@ mutable struct fd_set
     fd_set() = new()
 end
 
-const __sa_family_t = UInt8
-
 const sa_family_t = __sa_family_t
+
+const socklen_t = __socklen_t
 
 struct sockaddr
     sa_len::Cuchar
     sa_family::sa_family_t
     sa_data::NTuple{14, Cchar}
 end
-
-const __time_t = Int64
-
-const time_t = __time_t
-
-const __socklen_t = UInt32
-
-const socklen_t = __socklen_t
 
 const curl_socklen_t = socklen_t
 

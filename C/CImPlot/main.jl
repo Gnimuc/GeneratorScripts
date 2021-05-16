@@ -4,11 +4,11 @@ cd(@__DIR__)
 Pkg.activate(@__DIR__)
 Pkg.develop("Clang")
 Pkg.instantiate()
+Pkg.status()
 
 # run generator
-include("generator.jl")
+include("./gen/generator.jl")
 
 # loading generated package
-include(options["general"]["output_file_path"])
-mod = Symbol(options["general"]["module_name"])
-@eval using .$mod
+include(joinpath(@__DIR__, "src", "LibCImPlot.jl"))
+using .LibCImPlot

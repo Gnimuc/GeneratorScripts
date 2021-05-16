@@ -1,0 +1,16 @@
+[general]
+library_name = "libcimplot"
+output_file_path = "../src/LibCImPlot.jl"
+module_name = "LibCImPlot"
+export_symbol_prefixes = ["ImPlotFlags_", "ImPlotAxisFlags_", "ImPlotCol_", "ImPlotStyleVar_",
+                          "ImPlotMarker_", "ImPlotColormap_", "ImPlotLocation_",
+                          "ImPlotOrientation_", "ImPlotYAxis_"]
+
+printer_blacklist = ["CIMGUIPLOT_INCLUDED", "CIMGUI_API", "CONST"]
+
+auto_mutability = true
+auto_mutability_blacklist = []
+auto_mutability_whitelist = []
+
+[codegen.macro]
+macro_mode = "basic"

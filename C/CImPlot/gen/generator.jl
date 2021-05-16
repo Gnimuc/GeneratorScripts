@@ -1,45 +1,23 @@
 using Clang.Generators
 using CImGui_jll
+using Downloads
 
 include_dir = joinpath(CImGui_jll.artifact_dir, "include")
 
 cd(@__DIR__)
 
-const CIMPLOT_H = joinpath(@__DIR__, "cimplot_patched.h") |> normpath
+# cimplot_h = Downloads.download("https://raw.githubusercontent.com/cimgui/cimplot/master/cimplot.h", joinpath(@__DIR__, "cimplot.h")) |> normpath
+cimplot_h = joinpath(@__DIR__, "cimplot.h")
 
 options = load_options(joinpath(@__DIR__, "generator.toml"))
 
-args = ["-I$include_dir", "-DCIMGUI_DEFINE_ENUMS_AND_STRUCTS"]
-
-# add definitions
-@add_def ImVec2
-@add_def ImVec4
-@add_def ImGuiMouseButton
-@add_def ImGuiKeyModFlags
-@add_def ImS8
-@add_def ImU8
-@add_def ImS16
-@add_def ImU16
-@add_def ImS32
-@add_def ImU32
-@add_def ImS64
-@add_def ImU64
-@add_def ImTextureID
-@add_def ImGuiCond
-@add_def ImGuiDragDropFlags
-@add_def ImDrawList
-@add_def ImGuiContext
-
-#=
-jltypes = [Float32, Float64, Int8, UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64]
-typedict = Dict(zip(imtypes,jltypes))
-=#
-#type_names = ["FloatPtr", "doublePtr", "S8Ptr", "U8Ptr", "S16Ptr", "U16Ptr", "S32Ptr", "U32Ptr", "S64Ptr", "U64Ptr"]
+args = get_default_args()
+push!(args, "-isystem$include_dir", "-DCIMGUI_DEFINE_ENUMS_AND_STRUCTS")
 
 imdatatypes = [:Cfloat, :Cdouble, :ImS8, :ImU8, :ImS16, :ImU16, :ImS32, :ImU32, :ImS64, :ImU64]
 plot_types = ["Line", "Scatter", "Stairs", "Shaded", "BarsH", "Bars", "ErrorBarsH", "ErrorBars", "Stems", "VLines", "HLines", "PieChart", "Heatmap", "Histogram", "Histogram2D", "Digital"]
 
-ctx = create_context(CIMPLOT_H, args, options)
+ctx = create_context(cimplot_h, args, options)
 
 build!(ctx, BUILDSTAGE_NO_PRINTING)
 

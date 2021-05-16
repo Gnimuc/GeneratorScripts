@@ -1,7 +1,11 @@
+const time_t = Clong
+
 mutable struct fd_set
     fds_bits::NTuple{16, Culong}
     fd_set() = new()
 end
+
+const socklen_t = Cuint
 
 const sa_family_t = Cushort
 
@@ -9,10 +13,6 @@ struct sockaddr
     sa_family::sa_family_t
     sa_data::NTuple{14, Cchar}
 end
-
-const time_t = Clong
-
-const socklen_t = Cuint
 
 const curl_socklen_t = socklen_t
 

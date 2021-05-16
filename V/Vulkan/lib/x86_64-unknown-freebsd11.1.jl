@@ -1,8 +1,12 @@
 using CEnum
 
-const XID = Culong
+const xcb_connection_t = Cvoid
 
-const RROutput = XID
+const xcb_window_t = UInt32
+
+const xcb_visualid_t = UInt32
+
+const XID = Culong
 
 const VisualID = Culong
 
@@ -12,11 +16,7 @@ const _XDisplay = Cvoid
 
 const Display = _XDisplay
 
-const xcb_visualid_t = UInt32
-
-const xcb_window_t = UInt32
-
-const xcb_connection_t = Cvoid
+const RROutput = XID
 
 const VkBool32 = UInt32
 

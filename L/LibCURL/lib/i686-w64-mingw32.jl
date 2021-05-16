@@ -1,6 +1,12 @@
-const u_int = Cuint
+const __time32_t = Clong
+
+const time_t = __time32_t
 
 const UINT_PTR = Cuint
+
+const u_short = Cushort
+
+const u_int = Cuint
 
 const SOCKET = UINT_PTR
 
@@ -10,16 +16,10 @@ mutable struct fd_set
     fd_set() = new()
 end
 
-const u_short = Cushort
-
 struct sockaddr
     sa_family::u_short
     sa_data::NTuple{14, Cchar}
 end
-
-const __time32_t = Clong
-
-const time_t = __time32_t
 
 const socklen_t = Cint
 

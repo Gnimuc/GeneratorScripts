@@ -1,16 +1,34 @@
 using CEnum
 
-struct HMONITOR__
-    unused::Cint
-end
-
-const HMONITOR = Ptr{HMONITOR__}
+const WINBOOL = Cint
 
 const DWORD = Culong
 
 const LPVOID = Ptr{Cvoid}
 
-const WINBOOL = Cint
+const WCHAR = Cwchar_t
+
+const LPCWSTR = Ptr{WCHAR}
+
+const HANDLE = Ptr{Cvoid}
+
+struct HINSTANCE__
+    unused::Cint
+end
+
+const HINSTANCE = Ptr{HINSTANCE__}
+
+struct HWND__
+    unused::Cint
+end
+
+const HWND = Ptr{HWND__}
+
+struct HMONITOR__
+    unused::Cint
+end
+
+const HMONITOR = Ptr{HMONITOR__}
 
 struct _SECURITY_ATTRIBUTES
     nLength::DWORD
@@ -19,24 +37,6 @@ struct _SECURITY_ATTRIBUTES
 end
 
 const SECURITY_ATTRIBUTES = _SECURITY_ATTRIBUTES
-
-const WCHAR = Cwchar_t
-
-const LPCWSTR = Ptr{WCHAR}
-
-const HANDLE = Ptr{Cvoid}
-
-struct HWND__
-    unused::Cint
-end
-
-const HWND = Ptr{HWND__}
-
-struct HINSTANCE__
-    unused::Cint
-end
-
-const HINSTANCE = Ptr{HINSTANCE__}
 
 const VkBool32 = UInt32
 
