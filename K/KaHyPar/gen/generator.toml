@@ -1,0 +1,16 @@
+[general]
+library_name = "libkahypar"
+output_file_path = "../src/LibKaHyPar.jl"
+module_name = "LibKaHyPar"
+jll_pkg_name = "KaHyPar_jll"
+export_symbol_prefixes = ["kahypar_"]
+use_deterministic_symbol = true
+use_julia_native_enum_type = true
+
+[codegen]
+use_ccall_macro = true
+
+[codegen.macro]
+macro_mode = "basic"
+add_comment_for_skipped_macro = false
+ignore_header_guards = true
