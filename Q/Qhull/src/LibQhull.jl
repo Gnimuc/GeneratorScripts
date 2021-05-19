@@ -9,7 +9,7 @@ const DBL_EPSILON = eps()
 const INT_MAX = typemax(Cint)
 const INT_MIN = typemin(Cint)
 
-const IS_LIBC_MUSL = occursin("musl", Base.BUILD_TRIPLET)
+const IS_LIBC_MUSL = occursin("musl", Sys.MACHINE)
 
 if Sys.isapple() && Sys.ARCH === :aarch64
     include("../lib/aarch64-apple-darwin20.jl")
@@ -40,7 +40,7 @@ elseif Sys.isbsd() && !Sys.isapple()
 elseif Sys.iswindows() && Sys.ARCH === :x86_64
     include("../lib/x86_64-w64-mingw32.jl")
 else
-    error("Unknown platform: $(Base.BUILD_TRIPLET)")
+    error("Unknown platform: $(Sys.MACHINE)")
 end
 
 # exports

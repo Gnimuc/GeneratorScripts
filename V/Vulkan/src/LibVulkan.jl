@@ -36,7 +36,7 @@ VK_VERSION_MAJOR(version) = Cuint(version) >> 22
 VK_VERSION_MINOR(version) = (Cuint(version) >> 12) & 0x3ff
 VK_VERSION_PATCH(version) = Cuint(version) & 0xfff
 
-const IS_LIBC_MUSL = occursin("musl", Base.BUILD_TRIPLET)
+const IS_LIBC_MUSL = occursin("musl", Sys.MACHINE)
 if Sys.isapple() && Sys.ARCH === :aarch64
     include("../lib/aarch64-apple-darwin20.jl")
 elseif Sys.islinux() && Sys.ARCH === :aarch64 && !IS_LIBC_MUSL
@@ -66,7 +66,7 @@ elseif Sys.isbsd() && !Sys.isapple()
 elseif Sys.iswindows() && Sys.ARCH === :x86_64
     include("../lib/x86_64-w64-mingw32.jl")
 else
-    error("Unknown platform: $(Base.BUILD_TRIPLET)")
+    error("Unknown platform: $(Sys.MACHINE)")
 end
 
 # exports
