@@ -14,11 +14,11 @@ git-tree-sha1 = "215a9aa4a1f23fbd05b92769fdd62559488d70e9"
 uuid = "fa961155-64e5-5f13-b03f-caf6b980ea82"
 version = "0.4.1"
 
-[[CImGui_jll]]
+[[CImGuiPack_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "7f0d4bee1ceb849a2dff8bb87d86a885cf7af271"
-uuid = "7dd61d3b-0da5-5c94-bbf9-a0296c6e3925"
-version = "1.82.0+0"
+git-tree-sha1 = "70939649c5032c166ce2a1fe39a3a177b29a7907"
+uuid = "333409e9-af72-5310-9767-d6ad21a76a05"
+version = "0.1.2+0"
 
 [[Clang]]
 deps = ["CEnum", "Clang_jll", "Downloads", "Pkg", "TOML"]

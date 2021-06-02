@@ -7,8 +7,8 @@ Pkg.instantiate()
 Pkg.status()
 
 # run generator
-include("./gen/generator.jl")
+include("gen/generator.jl")
 
 # loading generated package
-include(joinpath(@__DIR__, "src", "LibCImPlot.jl"))
-using .LibCImPlot
+include(joinpath(@__DIR__, "src", "LibCImGui.jl"))
+using .LibCImGui
