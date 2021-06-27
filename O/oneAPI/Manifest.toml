@@ -233,9 +233,9 @@ uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
 
 [[oneAPI_Level_Zero_Headers_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "06922325d1c18e52decc8f96835f458ccc186476"
+git-tree-sha1 = "48982fbfd2f3d0a30d644563dcf96892d252b395"
 uuid = "f4bc562b-d309-54f8-9efb-476e56f0410d"
-version = "1.1.2+0"
+version = "1.1.2+1"
 
 [[p7zip_jll]]
 deps = ["Artifacts", "Libdl"]

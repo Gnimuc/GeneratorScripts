@@ -58,6 +58,7 @@ for target in JLLEnvs.JLL_ENV_TRIPLES
     general["library_name"] = "libvulkan"
     general["output_file_path"] = joinpath(@__DIR__, "..", "lib", "$target.jl")
     general["use_deterministic_symbol"] = true
+    general["add_fptr_methods"] = true
     # general["print_using_CEnum"] = false
     codegen["opaque_as_mutable_struct"] = false
 
