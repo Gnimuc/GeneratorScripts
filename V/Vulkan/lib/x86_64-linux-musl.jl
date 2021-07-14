@@ -10699,10 +10699,10 @@ end
 
 function Base.getproperty(x::Ptr{VkAccelerationStructureInstanceKHR}, f::Symbol)
     f === :transform && return Ptr{VkTransformMatrixKHR}(x + 0)
-    f === :instanceCustomIndex && return Ptr{UInt32}(x + 48)
-    f === :mask && return Ptr{UInt32}(x + 51)
-    f === :instanceShaderBindingTableRecordOffset && return Ptr{UInt32}(x + 52)
-    f === :flags && return Ptr{VkGeometryInstanceFlagsKHR}(x + 55)
+    f === :instanceCustomIndex && return (Ptr{UInt32}(x + 48), 0, 24)
+    f === :mask && return (Ptr{UInt32}(x + 48), 24, 8)
+    f === :instanceShaderBindingTableRecordOffset && return (Ptr{UInt32}(x + 52), 0, 24)
+    f === :flags && return (Ptr{VkGeometryInstanceFlagsKHR}(x + 52), 24, 8)
     f === :accelerationStructureReference && return Ptr{UInt64}(x + 56)
     return getfield(x, f)
 end
@@ -10717,17 +10717,37 @@ function Base.getproperty(x::VkAccelerationStructureInstanceKHR, f::Symbol)
         else
             (baseptr, offset, width) = fptr
             ty = eltype(baseptr)
-            i8 = GC.@preserve(r, unsafe_load(baseptr))
-            bitstr = bitstring(i8)
-            sig = bitstr[(end - offset) - (width - 1):end - offset]
-            zexted = lpad(sig, 8 * sizeof(ty), '0')
-            return parse(ty, zexted; base = 2)
+            baseptr32 = convert(Ptr{UInt32}, baseptr)
+            u64 = GC.@preserve(r, unsafe_load(baseptr32))
+            if offset + width > 32
+                u64 |= GC.@preserve(r, unsafe_load(baseptr32 + 4)) << 32
+            end
+            u64 = u64 >> offset & (1 << width - 1)
+            return u64 % ty
         end
     end
 end
 
 function Base.setproperty!(x::Ptr{VkAccelerationStructureInstanceKHR}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
+    fptr = getproperty(x, f)
+    if fptr isa Ptr
+        unsafe_store!(getproperty(x, f), v)
+    else
+        (baseptr, offset, width) = fptr
+        baseptr32 = convert(Ptr{UInt32}, baseptr)
+        u64 = unsafe_load(baseptr32)
+        straddle = offset + width > 32
+        if straddle
+            u64 |= unsafe_load(baseptr32 + 4) << 32
+        end
+        mask = 1 << width - 1
+        u64 &= ~(mask << offset)
+        u64 |= (unsigned(v) & mask) << offset
+        unsafe_store!(baseptr32, u64 & typemax(UInt32))
+        if straddle
+            unsafe_store!(baseptr32 + 4, u64 >> 32)
+        end
+    end
 end
 
 const VkAccelerationStructureInstanceNV = VkAccelerationStructureInstanceKHR

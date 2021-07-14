@@ -91,30 +91,30 @@ function Base.getproperty(x::Ptr{facetT}, f::Symbol)
     f === :coplanarset && return Ptr{Ptr{setT}}(x + 68)
     f === :visitid && return Ptr{Cuint}(x + 72)
     f === :id && return Ptr{Cuint}(x + 76)
-    f === :nummerge && return Ptr{Cuint}(x + 80)
-    f === :tricoplanar && return (Ptr{Cuint}(x + 81), 1, 1)
-    f === :newfacet && return (Ptr{Cuint}(x + 81), 2, 1)
-    f === :visible && return (Ptr{Cuint}(x + 81), 3, 1)
-    f === :toporient && return (Ptr{Cuint}(x + 81), 4, 1)
-    f === :simplicial && return (Ptr{Cuint}(x + 81), 5, 1)
-    f === :seen && return (Ptr{Cuint}(x + 81), 6, 1)
-    f === :seen2 && return (Ptr{Cuint}(x + 81), 7, 1)
-    f === :flipped && return Ptr{Cuint}(x + 82)
-    f === :upperdelaunay && return (Ptr{Cuint}(x + 82), 1, 1)
-    f === :notfurthest && return (Ptr{Cuint}(x + 82), 2, 1)
-    f === :good && return (Ptr{Cuint}(x + 82), 3, 1)
-    f === :isarea && return (Ptr{Cuint}(x + 82), 4, 1)
-    f === :dupridge && return (Ptr{Cuint}(x + 82), 5, 1)
-    f === :mergeridge && return (Ptr{Cuint}(x + 82), 6, 1)
-    f === :mergeridge2 && return (Ptr{Cuint}(x + 82), 7, 1)
-    f === :coplanarhorizon && return Ptr{Cuint}(x + 83)
-    f === :mergehorizon && return (Ptr{Cuint}(x + 83), 1, 1)
-    f === :cycledone && return (Ptr{Cuint}(x + 83), 2, 1)
-    f === :tested && return (Ptr{Cuint}(x + 83), 3, 1)
-    f === :keepcentrum && return (Ptr{Cuint}(x + 83), 4, 1)
-    f === :newmerge && return (Ptr{Cuint}(x + 83), 5, 1)
-    f === :degenerate && return (Ptr{Cuint}(x + 83), 6, 1)
-    f === :redundant && return (Ptr{Cuint}(x + 83), 7, 1)
+    f === :nummerge && return (Ptr{Cuint}(x + 80), 0, 9)
+    f === :tricoplanar && return (Ptr{Cuint}(x + 80), 9, 1)
+    f === :newfacet && return (Ptr{Cuint}(x + 80), 10, 1)
+    f === :visible && return (Ptr{Cuint}(x + 80), 11, 1)
+    f === :toporient && return (Ptr{Cuint}(x + 80), 12, 1)
+    f === :simplicial && return (Ptr{Cuint}(x + 80), 13, 1)
+    f === :seen && return (Ptr{Cuint}(x + 80), 14, 1)
+    f === :seen2 && return (Ptr{Cuint}(x + 80), 15, 1)
+    f === :flipped && return (Ptr{Cuint}(x + 80), 16, 1)
+    f === :upperdelaunay && return (Ptr{Cuint}(x + 80), 17, 1)
+    f === :notfurthest && return (Ptr{Cuint}(x + 80), 18, 1)
+    f === :good && return (Ptr{Cuint}(x + 80), 19, 1)
+    f === :isarea && return (Ptr{Cuint}(x + 80), 20, 1)
+    f === :dupridge && return (Ptr{Cuint}(x + 80), 21, 1)
+    f === :mergeridge && return (Ptr{Cuint}(x + 80), 22, 1)
+    f === :mergeridge2 && return (Ptr{Cuint}(x + 80), 23, 1)
+    f === :coplanarhorizon && return (Ptr{Cuint}(x + 80), 24, 1)
+    f === :mergehorizon && return (Ptr{Cuint}(x + 80), 25, 1)
+    f === :cycledone && return (Ptr{Cuint}(x + 80), 26, 1)
+    f === :tested && return (Ptr{Cuint}(x + 80), 27, 1)
+    f === :keepcentrum && return (Ptr{Cuint}(x + 80), 28, 1)
+    f === :newmerge && return (Ptr{Cuint}(x + 80), 29, 1)
+    f === :degenerate && return (Ptr{Cuint}(x + 80), 30, 1)
+    f === :redundant && return (Ptr{Cuint}(x + 80), 31, 1)
     return getfield(x, f)
 end
 
@@ -128,17 +128,37 @@ function Base.getproperty(x::facetT, f::Symbol)
         else
             (baseptr, offset, width) = fptr
             ty = eltype(baseptr)
-            i8 = GC.@preserve(r, unsafe_load(baseptr))
-            bitstr = bitstring(i8)
-            sig = bitstr[(end - offset) - (width - 1):end - offset]
-            zexted = lpad(sig, 8 * sizeof(ty), '0')
-            return parse(ty, zexted; base = 2)
+            baseptr32 = convert(Ptr{UInt32}, baseptr)
+            u64 = GC.@preserve(r, unsafe_load(baseptr32))
+            if offset + width > 32
+                u64 |= GC.@preserve(r, unsafe_load(baseptr32 + 4)) << 32
+            end
+            u64 = u64 >> offset & (1 << width - 1)
+            return u64 % ty
         end
     end
 end
 
 function Base.setproperty!(x::Ptr{facetT}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
+    fptr = getproperty(x, f)
+    if fptr isa Ptr
+        unsafe_store!(getproperty(x, f), v)
+    else
+        (baseptr, offset, width) = fptr
+        baseptr32 = convert(Ptr{UInt32}, baseptr)
+        u64 = unsafe_load(baseptr32)
+        straddle = offset + width > 32
+        if straddle
+            u64 |= unsafe_load(baseptr32 + 4) << 32
+        end
+        mask = 1 << width - 1
+        u64 &= ~(mask << offset)
+        u64 |= (unsigned(v) & mask) << offset
+        unsafe_store!(baseptr32, u64 & typemax(UInt32))
+        if straddle
+            unsafe_store!(baseptr32 + 4, u64 >> 32)
+        end
+    end
 end
 
 struct ridgeT
@@ -150,7 +170,7 @@ function Base.getproperty(x::Ptr{ridgeT}, f::Symbol)
     f === :top && return Ptr{Ptr{facetT}}(x + 4)
     f === :bottom && return Ptr{Ptr{facetT}}(x + 8)
     f === :id && return Ptr{Cuint}(x + 12)
-    f === :seen && return Ptr{Cuint}(x + 16)
+    f === :seen && return (Ptr{Cuint}(x + 16), 0, 1)
     f === :tested && return (Ptr{Cuint}(x + 16), 1, 1)
     f === :nonconvex && return (Ptr{Cuint}(x + 16), 2, 1)
     f === :mergevertex && return (Ptr{Cuint}(x + 16), 3, 1)
@@ -170,17 +190,37 @@ function Base.getproperty(x::ridgeT, f::Symbol)
         else
             (baseptr, offset, width) = fptr
             ty = eltype(baseptr)
-            i8 = GC.@preserve(r, unsafe_load(baseptr))
-            bitstr = bitstring(i8)
-            sig = bitstr[(end - offset) - (width - 1):end - offset]
-            zexted = lpad(sig, 8 * sizeof(ty), '0')
-            return parse(ty, zexted; base = 2)
+            baseptr32 = convert(Ptr{UInt32}, baseptr)
+            u64 = GC.@preserve(r, unsafe_load(baseptr32))
+            if offset + width > 32
+                u64 |= GC.@preserve(r, unsafe_load(baseptr32 + 4)) << 32
+            end
+            u64 = u64 >> offset & (1 << width - 1)
+            return u64 % ty
         end
     end
 end
 
 function Base.setproperty!(x::Ptr{ridgeT}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
+    fptr = getproperty(x, f)
+    if fptr isa Ptr
+        unsafe_store!(getproperty(x, f), v)
+    else
+        (baseptr, offset, width) = fptr
+        baseptr32 = convert(Ptr{UInt32}, baseptr)
+        u64 = unsafe_load(baseptr32)
+        straddle = offset + width > 32
+        if straddle
+            u64 |= unsafe_load(baseptr32 + 4) << 32
+        end
+        mask = 1 << width - 1
+        u64 &= ~(mask << offset)
+        u64 |= (unsigned(v) & mask) << offset
+        unsafe_store!(baseptr32, u64 & typemax(UInt32))
+        if straddle
+            unsafe_store!(baseptr32 + 4, u64 >> 32)
+        end
+    end
 end
 
 @enum qh_CENTER::UInt32 begin
@@ -1365,7 +1405,7 @@ function Base.getproperty(x::Ptr{vertexT}, f::Symbol)
     f === :neighbors && return Ptr{Ptr{setT}}(x + 12)
     f === :id && return Ptr{Cuint}(x + 16)
     f === :visitid && return Ptr{Cuint}(x + 20)
-    f === :seen && return Ptr{Cuint}(x + 24)
+    f === :seen && return (Ptr{Cuint}(x + 24), 0, 1)
     f === :seen2 && return (Ptr{Cuint}(x + 24), 1, 1)
     f === :deleted && return (Ptr{Cuint}(x + 24), 2, 1)
     f === :delridge && return (Ptr{Cuint}(x + 24), 3, 1)
@@ -1384,17 +1424,37 @@ function Base.getproperty(x::vertexT, f::Symbol)
         else
             (baseptr, offset, width) = fptr
             ty = eltype(baseptr)
-            i8 = GC.@preserve(r, unsafe_load(baseptr))
-            bitstr = bitstring(i8)
-            sig = bitstr[(end - offset) - (width - 1):end - offset]
-            zexted = lpad(sig, 8 * sizeof(ty), '0')
-            return parse(ty, zexted; base = 2)
+            baseptr32 = convert(Ptr{UInt32}, baseptr)
+            u64 = GC.@preserve(r, unsafe_load(baseptr32))
+            if offset + width > 32
+                u64 |= GC.@preserve(r, unsafe_load(baseptr32 + 4)) << 32
+            end
+            u64 = u64 >> offset & (1 << width - 1)
+            return u64 % ty
         end
     end
 end
 
 function Base.setproperty!(x::Ptr{vertexT}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
+    fptr = getproperty(x, f)
+    if fptr isa Ptr
+        unsafe_store!(getproperty(x, f), v)
+    else
+        (baseptr, offset, width) = fptr
+        baseptr32 = convert(Ptr{UInt32}, baseptr)
+        u64 = unsafe_load(baseptr32)
+        straddle = offset + width > 32
+        if straddle
+            u64 |= unsafe_load(baseptr32 + 4) << 32
+        end
+        mask = 1 << width - 1
+        u64 &= ~(mask << offset)
+        u64 |= (unsigned(v) & mask) << offset
+        unsafe_store!(baseptr32, u64 & typemax(UInt32))
+        if straddle
+            unsafe_store!(baseptr32 + 4, u64 >> 32)
+        end
+    end
 end
 
 function qh_qhull(qh)

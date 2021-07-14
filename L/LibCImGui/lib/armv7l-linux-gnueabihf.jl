@@ -36,9 +36,9 @@ function Base.getproperty(x::Ptr{ImGuiTableColumnSettings}, f::Symbol)
     f === :Index && return Ptr{ImGuiTableColumnIdx}(x + 8)
     f === :DisplayOrder && return Ptr{ImGuiTableColumnIdx}(x + 9)
     f === :SortOrder && return Ptr{ImGuiTableColumnIdx}(x + 10)
-    f === :SortDirection && return Ptr{ImU8}(x + 11)
-    f === :IsEnabled && return (Ptr{ImU8}(x + 11), 2, 1)
-    f === :IsStretch && return (Ptr{ImU8}(x + 11), 3, 1)
+    f === :SortDirection && return (Ptr{ImU8}(x + 8), 24, 2)
+    f === :IsEnabled && return (Ptr{ImU8}(x + 8), 26, 1)
+    f === :IsStretch && return (Ptr{ImU8}(x + 8), 27, 1)
     return getfield(x, f)
 end
 
@@ -52,17 +52,37 @@ function Base.getproperty(x::ImGuiTableColumnSettings, f::Symbol)
         else
             (baseptr, offset, width) = fptr
             ty = eltype(baseptr)
-            i8 = GC.@preserve(r, unsafe_load(baseptr))
-            bitstr = bitstring(i8)
-            sig = bitstr[(end - offset) - (width - 1):end - offset]
-            zexted = lpad(sig, 8 * sizeof(ty), '0')
-            return parse(ty, zexted; base = 2)
+            baseptr32 = convert(Ptr{UInt32}, baseptr)
+            u64 = GC.@preserve(r, unsafe_load(baseptr32))
+            if offset + width > 32
+                u64 |= GC.@preserve(r, unsafe_load(baseptr32 + 4)) << 32
+            end
+            u64 = u64 >> offset & (1 << width - 1)
+            return u64 % ty
         end
     end
 end
 
 function Base.setproperty!(x::Ptr{ImGuiTableColumnSettings}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
+    fptr = getproperty(x, f)
+    if fptr isa Ptr
+        unsafe_store!(getproperty(x, f), v)
+    else
+        (baseptr, offset, width) = fptr
+        baseptr32 = convert(Ptr{UInt32}, baseptr)
+        u64 = unsafe_load(baseptr32)
+        straddle = offset + width > 32
+        if straddle
+            u64 |= unsafe_load(baseptr32 + 4) << 32
+        end
+        mask = 1 << width - 1
+        u64 &= ~(mask << offset)
+        u64 |= (unsigned(v) & mask) << offset
+        unsafe_store!(baseptr32, u64 & typemax(UInt32))
+        if straddle
+            unsafe_store!(baseptr32 + 4, u64 >> 32)
+        end
+    end
 end
 
 const ImU32 = Cuint
@@ -717,10 +737,10 @@ function Base.getproperty(x::Ptr{ImGuiWindow}, f::Symbol)
     f === :HiddenFramesCannotSkipItems && return Ptr{ImS8}(x + 225)
     f === :HiddenFramesForRenderOnly && return Ptr{ImS8}(x + 226)
     f === :DisableInputsFrames && return Ptr{ImS8}(x + 227)
-    f === :SetWindowPosAllowFlags && return Ptr{ImGuiCond}(x + 228)
-    f === :SetWindowSizeAllowFlags && return Ptr{ImGuiCond}(x + 229)
-    f === :SetWindowCollapsedAllowFlags && return Ptr{ImGuiCond}(x + 230)
-    f === :SetWindowDockAllowFlags && return Ptr{ImGuiCond}(x + 231)
+    f === :SetWindowPosAllowFlags && return (Ptr{ImGuiCond}(x + 228), 0, 8)
+    f === :SetWindowSizeAllowFlags && return (Ptr{ImGuiCond}(x + 228), 8, 8)
+    f === :SetWindowCollapsedAllowFlags && return (Ptr{ImGuiCond}(x + 228), 16, 8)
+    f === :SetWindowDockAllowFlags && return (Ptr{ImGuiCond}(x + 228), 24, 8)
     f === :SetWindowPosVal && return Ptr{ImVec2}(x + 232)
     f === :SetWindowPosPivot && return Ptr{ImVec2}(x + 240)
     f === :IDStack && return Ptr{ImVector_ImGuiID}(x + 248)
@@ -756,9 +776,9 @@ function Base.getproperty(x::Ptr{ImGuiWindow}, f::Symbol)
     f === :MemoryDrawListIdxCapacity && return Ptr{Cint}(x + 924)
     f === :MemoryDrawListVtxCapacity && return Ptr{Cint}(x + 928)
     f === :MemoryCompacted && return Ptr{Bool}(x + 932)
-    f === :DockIsActive && return Ptr{Bool}(x + 933)
-    f === :DockTabIsVisible && return (Ptr{Bool}(x + 933), 1, 1)
-    f === :DockTabWantClose && return (Ptr{Bool}(x + 933), 2, 1)
+    f === :DockIsActive && return (Ptr{Bool}(x + 932), 8, 1)
+    f === :DockTabIsVisible && return (Ptr{Bool}(x + 932), 9, 1)
+    f === :DockTabWantClose && return (Ptr{Bool}(x + 932), 10, 1)
     f === :DockOrder && return Ptr{Cshort}(x + 934)
     f === :DockStyle && return Ptr{ImGuiWindowDockStyle}(x + 936)
     f === :DockNode && return Ptr{Ptr{ImGuiDockNode}}(x + 960)
@@ -779,17 +799,37 @@ function Base.getproperty(x::ImGuiWindow, f::Symbol)
         else
             (baseptr, offset, width) = fptr
             ty = eltype(baseptr)
-            i8 = GC.@preserve(r, unsafe_load(baseptr))
-            bitstr = bitstring(i8)
-            sig = bitstr[(end - offset) - (width - 1):end - offset]
-            zexted = lpad(sig, 8 * sizeof(ty), '0')
-            return parse(ty, zexted; base = 2)
+            baseptr32 = convert(Ptr{UInt32}, baseptr)
+            u64 = GC.@preserve(r, unsafe_load(baseptr32))
+            if offset + width > 32
+                u64 |= GC.@preserve(r, unsafe_load(baseptr32 + 4)) << 32
+            end
+            u64 = u64 >> offset & (1 << width - 1)
+            return u64 % ty
         end
     end
 end
 
 function Base.setproperty!(x::Ptr{ImGuiWindow}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
+    fptr = getproperty(x, f)
+    if fptr isa Ptr
+        unsafe_store!(getproperty(x, f), v)
+    else
+        (baseptr, offset, width) = fptr
+        baseptr32 = convert(Ptr{UInt32}, baseptr)
+        u64 = unsafe_load(baseptr32)
+        straddle = offset + width > 32
+        if straddle
+            u64 |= unsafe_load(baseptr32 + 4) << 32
+        end
+        mask = 1 << width - 1
+        u64 &= ~(mask << offset)
+        u64 |= (unsigned(v) & mask) << offset
+        unsafe_store!(baseptr32, u64 & typemax(UInt32))
+        if straddle
+            unsafe_store!(baseptr32 + 4, u64 >> 32)
+        end
+    end
 end
 
 mutable struct ImGuiTableColumnsSettings end
@@ -852,7 +892,7 @@ function Base.getproperty(x::Ptr{ImGuiTableColumn}, f::Symbol)
     f === :NavLayerCurrent && return Ptr{ImS8}(x + 97)
     f === :AutoFitQueue && return Ptr{ImU8}(x + 98)
     f === :CannotSkipItemsQueue && return Ptr{ImU8}(x + 99)
-    f === :SortDirection && return Ptr{ImU8}(x + 100)
+    f === :SortDirection && return (Ptr{ImU8}(x + 100), 0, 2)
     f === :SortDirectionsAvailCount && return (Ptr{ImU8}(x + 100), 2, 2)
     f === :SortDirectionsAvailMask && return (Ptr{ImU8}(x + 100), 4, 4)
     f === :SortDirectionsAvailList && return Ptr{ImU8}(x + 101)
@@ -869,17 +909,37 @@ function Base.getproperty(x::ImGuiTableColumn, f::Symbol)
         else
             (baseptr, offset, width) = fptr
             ty = eltype(baseptr)
-            i8 = GC.@preserve(r, unsafe_load(baseptr))
-            bitstr = bitstring(i8)
-            sig = bitstr[(end - offset) - (width - 1):end - offset]
-            zexted = lpad(sig, 8 * sizeof(ty), '0')
-            return parse(ty, zexted; base = 2)
+            baseptr32 = convert(Ptr{UInt32}, baseptr)
+            u64 = GC.@preserve(r, unsafe_load(baseptr32))
+            if offset + width > 32
+                u64 |= GC.@preserve(r, unsafe_load(baseptr32 + 4)) << 32
+            end
+            u64 = u64 >> offset & (1 << width - 1)
+            return u64 % ty
         end
     end
 end
 
 function Base.setproperty!(x::Ptr{ImGuiTableColumn}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
+    fptr = getproperty(x, f)
+    if fptr isa Ptr
+        unsafe_store!(getproperty(x, f), v)
+    else
+        (baseptr, offset, width) = fptr
+        baseptr32 = convert(Ptr{UInt32}, baseptr)
+        u64 = unsafe_load(baseptr32)
+        straddle = offset + width > 32
+        if straddle
+            u64 |= unsafe_load(baseptr32 + 4) << 32
+        end
+        mask = 1 << width - 1
+        u64 &= ~(mask << offset)
+        u64 |= (unsigned(v) & mask) << offset
+        unsafe_store!(baseptr32, u64 & typemax(UInt32))
+        if straddle
+            unsafe_store!(baseptr32 + 4, u64 >> 32)
+        end
+    end
 end
 
 struct ImSpan_ImGuiTableColumn
@@ -921,7 +981,7 @@ function Base.getproperty(x::Ptr{ImGuiTableColumnSortSpecs}, f::Symbol)
     f === :ColumnUserID && return Ptr{ImGuiID}(x + 0)
     f === :ColumnIndex && return Ptr{ImS16}(x + 4)
     f === :SortOrder && return Ptr{ImS16}(x + 6)
-    f === :SortDirection && return Ptr{ImGuiSortDirection}(x + 8)
+    f === :SortDirection && return (Ptr{ImGuiSortDirection}(x + 8), 0, 8)
     return getfield(x, f)
 end
 
@@ -935,17 +995,37 @@ function Base.getproperty(x::ImGuiTableColumnSortSpecs, f::Symbol)
         else
             (baseptr, offset, width) = fptr
             ty = eltype(baseptr)
-            i8 = GC.@preserve(r, unsafe_load(baseptr))
-            bitstr = bitstring(i8)
-            sig = bitstr[(end - offset) - (width - 1):end - offset]
-            zexted = lpad(sig, 8 * sizeof(ty), '0')
-            return parse(ty, zexted; base = 2)
+            baseptr32 = convert(Ptr{UInt32}, baseptr)
+            u64 = GC.@preserve(r, unsafe_load(baseptr32))
+            if offset + width > 32
+                u64 |= GC.@preserve(r, unsafe_load(baseptr32 + 4)) << 32
+            end
+            u64 = u64 >> offset & (1 << width - 1)
+            return u64 % ty
         end
     end
 end
 
 function Base.setproperty!(x::Ptr{ImGuiTableColumnSortSpecs}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
+    fptr = getproperty(x, f)
+    if fptr isa Ptr
+        unsafe_store!(getproperty(x, f), v)
+    else
+        (baseptr, offset, width) = fptr
+        baseptr32 = convert(Ptr{UInt32}, baseptr)
+        u64 = unsafe_load(baseptr32)
+        straddle = offset + width > 32
+        if straddle
+            u64 |= unsafe_load(baseptr32 + 4) << 32
+        end
+        mask = 1 << width - 1
+        u64 &= ~(mask << offset)
+        u64 |= (unsigned(v) & mask) << offset
+        unsafe_store!(baseptr32, u64 & typemax(UInt32))
+        if straddle
+            unsafe_store!(baseptr32 + 4, u64 >> 32)
+        end
+    end
 end
 
 struct ImVector_ImGuiTableColumnSortSpecs
@@ -988,8 +1068,8 @@ function Base.getproperty(x::Ptr{ImGuiTable}, f::Symbol)
     f === :RowMinHeight && return Ptr{Cfloat}(x + 108)
     f === :RowTextBaseline && return Ptr{Cfloat}(x + 112)
     f === :RowIndentOffsetX && return Ptr{Cfloat}(x + 116)
-    f === :RowFlags && return Ptr{ImGuiTableRowFlags}(x + 120)
-    f === :LastRowFlags && return Ptr{ImGuiTableRowFlags}(x + 122)
+    f === :RowFlags && return (Ptr{ImGuiTableRowFlags}(x + 120), 0, 16)
+    f === :LastRowFlags && return (Ptr{ImGuiTableRowFlags}(x + 120), 16, 16)
     f === :RowBgColorCounter && return Ptr{Cint}(x + 124)
     f === :RowBgColor && return Ptr{NTuple{2, ImU32}}(x + 128)
     f === :BorderColorStrong && return Ptr{ImU32}(x + 136)
@@ -1089,17 +1169,37 @@ function Base.getproperty(x::ImGuiTable, f::Symbol)
         else
             (baseptr, offset, width) = fptr
             ty = eltype(baseptr)
-            i8 = GC.@preserve(r, unsafe_load(baseptr))
-            bitstr = bitstring(i8)
-            sig = bitstr[(end - offset) - (width - 1):end - offset]
-            zexted = lpad(sig, 8 * sizeof(ty), '0')
-            return parse(ty, zexted; base = 2)
+            baseptr32 = convert(Ptr{UInt32}, baseptr)
+            u64 = GC.@preserve(r, unsafe_load(baseptr32))
+            if offset + width > 32
+                u64 |= GC.@preserve(r, unsafe_load(baseptr32 + 4)) << 32
+            end
+            u64 = u64 >> offset & (1 << width - 1)
+            return u64 % ty
         end
     end
 end
 
 function Base.setproperty!(x::Ptr{ImGuiTable}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
+    fptr = getproperty(x, f)
+    if fptr isa Ptr
+        unsafe_store!(getproperty(x, f), v)
+    else
+        (baseptr, offset, width) = fptr
+        baseptr32 = convert(Ptr{UInt32}, baseptr)
+        u64 = unsafe_load(baseptr32)
+        straddle = offset + width > 32
+        if straddle
+            u64 |= unsafe_load(baseptr32 + 4) << 32
+        end
+        mask = 1 << width - 1
+        u64 &= ~(mask << offset)
+        u64 |= (unsigned(v) & mask) << offset
+        unsafe_store!(baseptr32, u64 & typemax(UInt32))
+        if straddle
+            unsafe_store!(baseptr32 + 4, u64 >> 32)
+        end
+    end
 end
 
 struct ImGuiTabItem
@@ -1361,19 +1461,19 @@ function Base.getproperty(x::Ptr{ImGuiDockNode}, f::Symbol)
     f === :LastFocusedNodeId && return Ptr{ImGuiID}(x + 132)
     f === :SelectedTabId && return Ptr{ImGuiID}(x + 136)
     f === :WantCloseTabId && return Ptr{ImGuiID}(x + 140)
-    f === :AuthorityForPos && return Ptr{ImGuiDataAuthority}(x + 144)
+    f === :AuthorityForPos && return (Ptr{ImGuiDataAuthority}(x + 144), 0, 3)
     f === :AuthorityForSize && return (Ptr{ImGuiDataAuthority}(x + 144), 3, 3)
     f === :AuthorityForViewport && return (Ptr{ImGuiDataAuthority}(x + 144), 6, 3)
-    f === :IsVisible && return (Ptr{Bool}(x + 145), 1, 1)
-    f === :IsFocused && return (Ptr{Bool}(x + 145), 2, 1)
-    f === :HasCloseButton && return (Ptr{Bool}(x + 145), 3, 1)
-    f === :HasWindowMenuButton && return (Ptr{Bool}(x + 145), 4, 1)
-    f === :WantCloseAll && return (Ptr{Bool}(x + 145), 5, 1)
-    f === :WantLockSizeOnce && return (Ptr{Bool}(x + 145), 6, 1)
-    f === :WantMouseMove && return (Ptr{Bool}(x + 145), 7, 1)
-    f === :WantHiddenTabBarUpdate && return Ptr{Bool}(x + 146)
-    f === :WantHiddenTabBarToggle && return (Ptr{Bool}(x + 146), 1, 1)
-    f === :MarkedForPosSizeWrite && return (Ptr{Bool}(x + 146), 2, 1)
+    f === :IsVisible && return (Ptr{Bool}(x + 144), 9, 1)
+    f === :IsFocused && return (Ptr{Bool}(x + 144), 10, 1)
+    f === :HasCloseButton && return (Ptr{Bool}(x + 144), 11, 1)
+    f === :HasWindowMenuButton && return (Ptr{Bool}(x + 144), 12, 1)
+    f === :WantCloseAll && return (Ptr{Bool}(x + 144), 13, 1)
+    f === :WantLockSizeOnce && return (Ptr{Bool}(x + 144), 14, 1)
+    f === :WantMouseMove && return (Ptr{Bool}(x + 144), 15, 1)
+    f === :WantHiddenTabBarUpdate && return (Ptr{Bool}(x + 144), 16, 1)
+    f === :WantHiddenTabBarToggle && return (Ptr{Bool}(x + 144), 17, 1)
+    f === :MarkedForPosSizeWrite && return (Ptr{Bool}(x + 144), 18, 1)
     return getfield(x, f)
 end
 
@@ -1387,17 +1487,37 @@ function Base.getproperty(x::ImGuiDockNode, f::Symbol)
         else
             (baseptr, offset, width) = fptr
             ty = eltype(baseptr)
-            i8 = GC.@preserve(r, unsafe_load(baseptr))
-            bitstr = bitstring(i8)
-            sig = bitstr[(end - offset) - (width - 1):end - offset]
-            zexted = lpad(sig, 8 * sizeof(ty), '0')
-            return parse(ty, zexted; base = 2)
+            baseptr32 = convert(Ptr{UInt32}, baseptr)
+            u64 = GC.@preserve(r, unsafe_load(baseptr32))
+            if offset + width > 32
+                u64 |= GC.@preserve(r, unsafe_load(baseptr32 + 4)) << 32
+            end
+            u64 = u64 >> offset & (1 << width - 1)
+            return u64 % ty
         end
     end
 end
 
 function Base.setproperty!(x::Ptr{ImGuiDockNode}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
+    fptr = getproperty(x, f)
+    if fptr isa Ptr
+        unsafe_store!(getproperty(x, f), v)
+    else
+        (baseptr, offset, width) = fptr
+        baseptr32 = convert(Ptr{UInt32}, baseptr)
+        u64 = unsafe_load(baseptr32)
+        straddle = offset + width > 32
+        if straddle
+            u64 |= unsafe_load(baseptr32 + 4) << 32
+        end
+        mask = 1 << width - 1
+        u64 &= ~(mask << offset)
+        u64 |= (unsigned(v) & mask) << offset
+        unsafe_store!(baseptr32, u64 & typemax(UInt32))
+        if straddle
+            unsafe_store!(baseptr32 + 4, u64 >> 32)
+        end
+    end
 end
 
 mutable struct ImGuiDockRequest end
@@ -1894,7 +2014,7 @@ struct ImFontGlyph
 end
 
 function Base.getproperty(x::Ptr{ImFontGlyph}, f::Symbol)
-    f === :Colored && return Ptr{Cuint}(x + 0)
+    f === :Colored && return (Ptr{Cuint}(x + 0), 0, 1)
     f === :Visible && return (Ptr{Cuint}(x + 0), 1, 1)
     f === :Codepoint && return (Ptr{Cuint}(x + 0), 2, 30)
     f === :AdvanceX && return Ptr{Cfloat}(x + 4)
@@ -1919,17 +2039,37 @@ function Base.getproperty(x::ImFontGlyph, f::Symbol)
         else
             (baseptr, offset, width) = fptr
             ty = eltype(baseptr)
-            i8 = GC.@preserve(r, unsafe_load(baseptr))
-            bitstr = bitstring(i8)
-            sig = bitstr[(end - offset) - (width - 1):end - offset]
-            zexted = lpad(sig, 8 * sizeof(ty), '0')
-            return parse(ty, zexted; base = 2)
+            baseptr32 = convert(Ptr{UInt32}, baseptr)
+            u64 = GC.@preserve(r, unsafe_load(baseptr32))
+            if offset + width > 32
+                u64 |= GC.@preserve(r, unsafe_load(baseptr32 + 4)) << 32
+            end
+            u64 = u64 >> offset & (1 << width - 1)
+            return u64 % ty
         end
     end
 end
 
 function Base.setproperty!(x::Ptr{ImFontGlyph}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
+    fptr = getproperty(x, f)
+    if fptr isa Ptr
+        unsafe_store!(getproperty(x, f), v)
+    else
+        (baseptr, offset, width) = fptr
+        baseptr32 = convert(Ptr{UInt32}, baseptr)
+        u64 = unsafe_load(baseptr32)
+        straddle = offset + width > 32
+        if straddle
+            u64 |= unsafe_load(baseptr32 + 4) << 32
+        end
+        mask = 1 << width - 1
+        u64 &= ~(mask << offset)
+        u64 |= (unsigned(v) & mask) << offset
+        unsafe_store!(baseptr32, u64 & typemax(UInt32))
+        if straddle
+            unsafe_store!(baseptr32 + 4, u64 >> 32)
+        end
+    end
 end
 
 struct ImVector_ImFontGlyph
