@@ -1161,7 +1161,7 @@ const FT_INT64 = Clong
 
 const FT_UINT64 = Culong
 
-const FT_CALLBACK_TABLE_DEF = nothing
+# Skipping MacroDefinition: FT_PUBLIC_FUNCTION_ATTRIBUTE __attribute__ ( ( visibility ( "default" ) ) )
 
 const ft_pixel_mode_none = FT_PIXEL_MODE_NONE
 
@@ -1186,6 +1186,8 @@ const FT_OUTLINE_IGNORE_DROPOUTS = 0x08
 const FT_OUTLINE_SMART_DROPOUTS = 0x10
 
 const FT_OUTLINE_INCLUDE_STUBS = 0x20
+
+const FT_OUTLINE_OVERLAP = 0x40
 
 const FT_OUTLINE_HIGH_PRECISION = 0x0100
 
@@ -1457,7 +1459,7 @@ const FREETYPE_MAJOR = 2
 
 const FREETYPE_MINOR = 10
 
-const FREETYPE_PATCH = 1
+const FREETYPE_PATCH = 4
 
 # exports
 const PREFIXES = ["FREETYPE_", "FT_", "ft_", "TT_", "TTAG_", "CFF_", "T1_", "CID_", "PS_", "t1_"]

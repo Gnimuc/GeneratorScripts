@@ -35,7 +35,6 @@ struct setT
     maxsize::Cint
     e::NTuple{1, setelemT}
 end
-
 function Base.getproperty(x::Ptr{setT}, f::Symbol)
     f === :maxsize && return Ptr{Cint}(x + 0)
     f === :e && return Ptr{NTuple{1, setelemT}}(x + 4)
@@ -45,6 +44,7 @@ end
 function Base.setproperty!(x::Ptr{setT}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
+
 
 @enum qh_PRINT::UInt32 begin
     qh_PRINTnone = 0
@@ -99,30 +99,30 @@ function Base.getproperty(x::Ptr{facetT}, f::Symbol)
     f === :coplanarset && return Ptr{Ptr{setT}}(x + 64)
     f === :visitid && return Ptr{Cuint}(x + 68)
     f === :id && return Ptr{Cuint}(x + 72)
-    f === :nummerge && return Ptr{Cuint}(x + 76)
-    f === :tricoplanar && return (Ptr{Cuint}(x + 77), 1, 1)
-    f === :newfacet && return (Ptr{Cuint}(x + 77), 2, 1)
-    f === :visible && return (Ptr{Cuint}(x + 77), 3, 1)
-    f === :toporient && return (Ptr{Cuint}(x + 77), 4, 1)
-    f === :simplicial && return (Ptr{Cuint}(x + 77), 5, 1)
-    f === :seen && return (Ptr{Cuint}(x + 77), 6, 1)
-    f === :seen2 && return (Ptr{Cuint}(x + 77), 7, 1)
-    f === :flipped && return Ptr{Cuint}(x + 78)
-    f === :upperdelaunay && return (Ptr{Cuint}(x + 78), 1, 1)
-    f === :notfurthest && return (Ptr{Cuint}(x + 78), 2, 1)
-    f === :good && return (Ptr{Cuint}(x + 78), 3, 1)
-    f === :isarea && return (Ptr{Cuint}(x + 78), 4, 1)
-    f === :dupridge && return (Ptr{Cuint}(x + 78), 5, 1)
-    f === :mergeridge && return (Ptr{Cuint}(x + 78), 6, 1)
-    f === :mergeridge2 && return (Ptr{Cuint}(x + 78), 7, 1)
-    f === :coplanarhorizon && return Ptr{Cuint}(x + 79)
-    f === :mergehorizon && return (Ptr{Cuint}(x + 79), 1, 1)
-    f === :cycledone && return (Ptr{Cuint}(x + 79), 2, 1)
-    f === :tested && return (Ptr{Cuint}(x + 79), 3, 1)
-    f === :keepcentrum && return (Ptr{Cuint}(x + 79), 4, 1)
-    f === :newmerge && return (Ptr{Cuint}(x + 79), 5, 1)
-    f === :degenerate && return (Ptr{Cuint}(x + 79), 6, 1)
-    f === :redundant && return (Ptr{Cuint}(x + 79), 7, 1)
+    f === :nummerge && return (Ptr{Cuint}(x + 76), 0, 9)
+    f === :tricoplanar && return (Ptr{Cuint}(x + 76), 9, 1)
+    f === :newfacet && return (Ptr{Cuint}(x + 76), 10, 1)
+    f === :visible && return (Ptr{Cuint}(x + 76), 11, 1)
+    f === :toporient && return (Ptr{Cuint}(x + 76), 12, 1)
+    f === :simplicial && return (Ptr{Cuint}(x + 76), 13, 1)
+    f === :seen && return (Ptr{Cuint}(x + 76), 14, 1)
+    f === :seen2 && return (Ptr{Cuint}(x + 76), 15, 1)
+    f === :flipped && return (Ptr{Cuint}(x + 76), 16, 1)
+    f === :upperdelaunay && return (Ptr{Cuint}(x + 76), 17, 1)
+    f === :notfurthest && return (Ptr{Cuint}(x + 76), 18, 1)
+    f === :good && return (Ptr{Cuint}(x + 76), 19, 1)
+    f === :isarea && return (Ptr{Cuint}(x + 76), 20, 1)
+    f === :dupridge && return (Ptr{Cuint}(x + 76), 21, 1)
+    f === :mergeridge && return (Ptr{Cuint}(x + 76), 22, 1)
+    f === :mergeridge2 && return (Ptr{Cuint}(x + 76), 23, 1)
+    f === :coplanarhorizon && return (Ptr{Cuint}(x + 76), 24, 1)
+    f === :mergehorizon && return (Ptr{Cuint}(x + 76), 25, 1)
+    f === :cycledone && return (Ptr{Cuint}(x + 76), 26, 1)
+    f === :tested && return (Ptr{Cuint}(x + 76), 27, 1)
+    f === :keepcentrum && return (Ptr{Cuint}(x + 76), 28, 1)
+    f === :newmerge && return (Ptr{Cuint}(x + 76), 29, 1)
+    f === :degenerate && return (Ptr{Cuint}(x + 76), 30, 1)
+    f === :redundant && return (Ptr{Cuint}(x + 76), 31, 1)
     return getfield(x, f)
 end
 
@@ -136,17 +136,37 @@ function Base.getproperty(x::facetT, f::Symbol)
         else
             (baseptr, offset, width) = fptr
             ty = eltype(baseptr)
-            i8 = GC.@preserve(r, unsafe_load(baseptr))
-            bitstr = bitstring(i8)
-            sig = bitstr[(end - offset) - (width - 1):end - offset]
-            zexted = lpad(sig, 8 * sizeof(ty), '0')
-            return parse(ty, zexted; base = 2)
+            baseptr32 = convert(Ptr{UInt32}, baseptr)
+            u64 = GC.@preserve(r, unsafe_load(baseptr32))
+            if offset + width > 32
+                u64 |= GC.@preserve(r, unsafe_load(baseptr32 + 4)) << 32
+            end
+            u64 = u64 >> offset & (1 << width - 1)
+            return u64 % ty
         end
     end
 end
 
 function Base.setproperty!(x::Ptr{facetT}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
+    fptr = getproperty(x, f)
+    if fptr isa Ptr
+        unsafe_store!(getproperty(x, f), v)
+    else
+        (baseptr, offset, width) = fptr
+        baseptr32 = convert(Ptr{UInt32}, baseptr)
+        u64 = unsafe_load(baseptr32)
+        straddle = offset + width > 32
+        if straddle
+            u64 |= unsafe_load(baseptr32 + 4) << 32
+        end
+        mask = 1 << width - 1
+        u64 &= ~(mask << offset)
+        u64 |= (unsigned(v) & mask) << offset
+        unsafe_store!(baseptr32, u64 & typemax(UInt32))
+        if straddle
+            unsafe_store!(baseptr32 + 4, u64 >> 32)
+        end
+    end
 end
 
 struct ridgeT
@@ -158,7 +178,7 @@ function Base.getproperty(x::Ptr{ridgeT}, f::Symbol)
     f === :top && return Ptr{Ptr{facetT}}(x + 4)
     f === :bottom && return Ptr{Ptr{facetT}}(x + 8)
     f === :id && return Ptr{Cuint}(x + 12)
-    f === :seen && return Ptr{Cuint}(x + 16)
+    f === :seen && return (Ptr{Cuint}(x + 16), 0, 1)
     f === :tested && return (Ptr{Cuint}(x + 16), 1, 1)
     f === :nonconvex && return (Ptr{Cuint}(x + 16), 2, 1)
     f === :mergevertex && return (Ptr{Cuint}(x + 16), 3, 1)
@@ -178,17 +198,37 @@ function Base.getproperty(x::ridgeT, f::Symbol)
         else
             (baseptr, offset, width) = fptr
             ty = eltype(baseptr)
-            i8 = GC.@preserve(r, unsafe_load(baseptr))
-            bitstr = bitstring(i8)
-            sig = bitstr[(end - offset) - (width - 1):end - offset]
-            zexted = lpad(sig, 8 * sizeof(ty), '0')
-            return parse(ty, zexted; base = 2)
+            baseptr32 = convert(Ptr{UInt32}, baseptr)
+            u64 = GC.@preserve(r, unsafe_load(baseptr32))
+            if offset + width > 32
+                u64 |= GC.@preserve(r, unsafe_load(baseptr32 + 4)) << 32
+            end
+            u64 = u64 >> offset & (1 << width - 1)
+            return u64 % ty
         end
     end
 end
 
 function Base.setproperty!(x::Ptr{ridgeT}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
+    fptr = getproperty(x, f)
+    if fptr isa Ptr
+        unsafe_store!(getproperty(x, f), v)
+    else
+        (baseptr, offset, width) = fptr
+        baseptr32 = convert(Ptr{UInt32}, baseptr)
+        u64 = unsafe_load(baseptr32)
+        straddle = offset + width > 32
+        if straddle
+            u64 |= unsafe_load(baseptr32 + 4) << 32
+        end
+        mask = 1 << width - 1
+        u64 &= ~(mask << offset)
+        u64 |= (unsigned(v) & mask) << offset
+        unsafe_store!(baseptr32, u64 & typemax(UInt32))
+        if straddle
+            unsafe_store!(baseptr32 + 4, u64 >> 32)
+        end
+    end
 end
 
 @enum qh_CENTER::UInt32 begin
@@ -422,12 +462,9 @@ struct qhT
     jmpXtra::NTuple{40, Cchar}
     restartexit::jmp_buf
     jmpXtra2::NTuple{40, Cchar}
-    # fin::Ptr{Libc.FILE}
-    fin::Ptr{Libc.FILE}
-    # fout::Ptr{Libc.FILE}
-    fout::Ptr{Libc.FILE}
-    # ferr::Ptr{Libc.FILE}
-    ferr::Ptr{Libc.FILE}
+    fin::Ptr{Libc.FILE} # fin::Ptr{Libc.FILE}
+    fout::Ptr{Libc.FILE} # fout::Ptr{Libc.FILE}
+    ferr::Ptr{Libc.FILE} # ferr::Ptr{Libc.FILE}
     interior_point::Ptr{Cdouble}
     normal_size::Cint
     center_size::Cint
@@ -443,14 +480,10 @@ struct qhT
     traceridge_id::Cuint
     traceridge::Ptr{ridgeT}
     tracevertex_id::Cuint
-    # tracevertex::Ptr{vertexT}
-    tracevertex::Ptr{Cvoid}
-    # vertex_list::Ptr{vertexT}
-    vertex_list::Ptr{Cvoid}
-    # vertex_tail::Ptr{vertexT}
-    vertex_tail::Ptr{Cvoid}
-    # newvertex_list::Ptr{vertexT}
-    newvertex_list::Ptr{Cvoid}
+    tracevertex::Ptr{Cvoid} # tracevertex::Ptr{vertexT}
+    vertex_list::Ptr{Cvoid} # vertex_list::Ptr{vertexT}
+    vertex_tail::Ptr{Cvoid} # vertex_tail::Ptr{vertexT}
+    newvertex_list::Ptr{Cvoid} # newvertex_list::Ptr{vertexT}
     num_facets::Cint
     num_vertices::Cint
     num_outside::Cint
@@ -1373,7 +1406,7 @@ function Base.getproperty(x::Ptr{vertexT}, f::Symbol)
     f === :neighbors && return Ptr{Ptr{setT}}(x + 12)
     f === :id && return Ptr{Cuint}(x + 16)
     f === :visitid && return Ptr{Cuint}(x + 20)
-    f === :seen && return Ptr{Cuint}(x + 24)
+    f === :seen && return (Ptr{Cuint}(x + 24), 0, 1)
     f === :seen2 && return (Ptr{Cuint}(x + 24), 1, 1)
     f === :deleted && return (Ptr{Cuint}(x + 24), 2, 1)
     f === :delridge && return (Ptr{Cuint}(x + 24), 3, 1)
@@ -1392,17 +1425,37 @@ function Base.getproperty(x::vertexT, f::Symbol)
         else
             (baseptr, offset, width) = fptr
             ty = eltype(baseptr)
-            i8 = GC.@preserve(r, unsafe_load(baseptr))
-            bitstr = bitstring(i8)
-            sig = bitstr[(end - offset) - (width - 1):end - offset]
-            zexted = lpad(sig, 8 * sizeof(ty), '0')
-            return parse(ty, zexted; base = 2)
+            baseptr32 = convert(Ptr{UInt32}, baseptr)
+            u64 = GC.@preserve(r, unsafe_load(baseptr32))
+            if offset + width > 32
+                u64 |= GC.@preserve(r, unsafe_load(baseptr32 + 4)) << 32
+            end
+            u64 = u64 >> offset & (1 << width - 1)
+            return u64 % ty
         end
     end
 end
 
 function Base.setproperty!(x::Ptr{vertexT}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
+    fptr = getproperty(x, f)
+    if fptr isa Ptr
+        unsafe_store!(getproperty(x, f), v)
+    else
+        (baseptr, offset, width) = fptr
+        baseptr32 = convert(Ptr{UInt32}, baseptr)
+        u64 = unsafe_load(baseptr32)
+        straddle = offset + width > 32
+        if straddle
+            u64 |= unsafe_load(baseptr32 + 4) << 32
+        end
+        mask = 1 << width - 1
+        u64 &= ~(mask << offset)
+        u64 |= (unsigned(v) & mask) << offset
+        unsafe_store!(baseptr32, u64 & typemax(UInt32))
+        if straddle
+            unsafe_store!(baseptr32 + 4, u64 >> 32)
+        end
+    end
 end
 
 function qh_qhull(qh)

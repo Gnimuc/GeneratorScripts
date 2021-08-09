@@ -50,8 +50,7 @@ struct curl_httppost
     buffer::Ptr{Cchar}
     bufferlength::Clong
     contenttype::Ptr{Cchar}
-    # contentheader::Ptr{curl_slist}
-    contentheader::Ptr{Cvoid}
+    contentheader::Ptr{Cvoid} # contentheader::Ptr{curl_slist}
     more::Ptr{curl_httppost}
     flags::Clong
     showfilename::Ptr{Cchar}
@@ -1492,7 +1491,6 @@ mutable struct __JL_Ctag_48
     target::Ptr{Cchar}
     __JL_Ctag_48() = new()
 end
-
 function Base.getproperty(x::Ptr{__JL_Ctag_48}, f::Symbol)
     f === :time && return Ptr{Ptr{Cchar}}(x + 0)
     f === :perm && return Ptr{Ptr{Cchar}}(x + 4)
@@ -1512,6 +1510,7 @@ end
 function Base.setproperty!(x::Ptr{__JL_Ctag_48}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
+
 
 const LIBCURL_COPYRIGHT = "1996 - 2020 Daniel Stenberg, <daniel@haxx.se>."
 

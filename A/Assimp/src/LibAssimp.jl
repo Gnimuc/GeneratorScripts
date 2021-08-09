@@ -460,8 +460,7 @@ end
 
 struct aiScene
     mFlags::Cuint
-    # mRootNode::Ptr{aiNode}
-    mRootNode::Ptr{Cvoid}
+    mRootNode::Ptr{Cvoid} # mRootNode::Ptr{aiNode}
     mNumMeshes::Cuint
     mMeshes::Ptr{Ptr{aiMesh}}
     mNumMaterials::Cuint
