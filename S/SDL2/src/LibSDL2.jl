@@ -5439,7 +5439,6 @@ struct __JL_Ctag_246
     autoclose::SDL_bool
     fp::Ptr{Libc.FILE}
 end
-
 function Base.getproperty(x::Ptr{__JL_Ctag_246}, f::Symbol)
     f === :autoclose && return Ptr{SDL_bool}(x + 0)
     f === :fp && return Ptr{Ptr{Libc.FILE}}(x + 8)
@@ -5457,12 +5456,12 @@ function Base.setproperty!(x::Ptr{__JL_Ctag_246}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
+
 struct __JL_Ctag_247
     base::Ptr{Uint8}
     here::Ptr{Uint8}
     stop::Ptr{Uint8}
 end
-
 function Base.getproperty(x::Ptr{__JL_Ctag_247}, f::Symbol)
     f === :base && return Ptr{Ptr{Uint8}}(x + 0)
     f === :here && return Ptr{Ptr{Uint8}}(x + 8)
@@ -5481,11 +5480,11 @@ function Base.setproperty!(x::Ptr{__JL_Ctag_247}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
+
 struct __JL_Ctag_248
     data1::Ptr{Cvoid}
     data2::Ptr{Cvoid}
 end
-
 function Base.getproperty(x::Ptr{__JL_Ctag_248}, f::Symbol)
     f === :data1 && return Ptr{Ptr{Cvoid}}(x + 0)
     f === :data2 && return Ptr{Ptr{Cvoid}}(x + 8)
@@ -5502,6 +5501,7 @@ end
 function Base.setproperty!(x::Ptr{__JL_Ctag_248}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
+
 
 struct __JL_Ctag_249
     data::NTuple{8, UInt8}
@@ -5529,7 +5529,6 @@ struct __JL_Ctag_250
     hat::Cint
     hat_mask::Cint
 end
-
 function Base.getproperty(x::Ptr{__JL_Ctag_250}, f::Symbol)
     f === :hat && return Ptr{Cint}(x + 0)
     f === :hat_mask && return Ptr{Cint}(x + 4)
@@ -5546,6 +5545,7 @@ end
 function Base.setproperty!(x::Ptr{__JL_Ctag_250}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
+
 
 const __MACOSX__ = 1
 
