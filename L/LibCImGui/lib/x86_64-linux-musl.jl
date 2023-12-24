@@ -107,54 +107,6 @@ function Base.setproperty!(x::Ptr{ImVec2}, f::Symbol, v)
 end
 
 
-struct ImGuiViewport
-    ID::ImGuiID
-    Flags::ImGuiViewportFlags
-    Pos::ImVec2
-    Size::ImVec2
-    WorkPos::ImVec2
-    WorkSize::ImVec2
-    DpiScale::Cfloat
-    ParentViewportId::ImGuiID
-    DrawData::Ptr{Cvoid} # DrawData::Ptr{ImDrawData}
-    RendererUserData::Ptr{Cvoid}
-    PlatformUserData::Ptr{Cvoid}
-    PlatformHandle::Ptr{Cvoid}
-    PlatformHandleRaw::Ptr{Cvoid}
-    PlatformRequestMove::Bool
-    PlatformRequestResize::Bool
-    PlatformRequestClose::Bool
-end
-
-function Base.getproperty(x::ImGuiViewport, f::Symbol)
-    f === :DrawData && return Ptr{ImDrawData}(getfield(x, f))
-    return getfield(x, f)
-end
-
-function Base.getproperty(x::Ptr{ImGuiViewport}, f::Symbol)
-    f === :ID && return Ptr{ImGuiID}(x + 0)
-    f === :Flags && return Ptr{ImGuiViewportFlags}(x + 4)
-    f === :Pos && return Ptr{ImVec2}(x + 8)
-    f === :Size && return Ptr{ImVec2}(x + 16)
-    f === :WorkPos && return Ptr{ImVec2}(x + 24)
-    f === :WorkSize && return Ptr{ImVec2}(x + 32)
-    f === :DpiScale && return Ptr{Cfloat}(x + 40)
-    f === :ParentViewportId && return Ptr{ImGuiID}(x + 44)
-    f === :DrawData && return Ptr{Ptr{ImDrawData}}(x + 48)
-    f === :RendererUserData && return Ptr{Ptr{Cvoid}}(x + 56)
-    f === :PlatformUserData && return Ptr{Ptr{Cvoid}}(x + 64)
-    f === :PlatformHandle && return Ptr{Ptr{Cvoid}}(x + 72)
-    f === :PlatformHandleRaw && return Ptr{Ptr{Cvoid}}(x + 80)
-    f === :PlatformRequestMove && return Ptr{Bool}(x + 88)
-    f === :PlatformRequestResize && return Ptr{Bool}(x + 89)
-    f === :PlatformRequestClose && return Ptr{Bool}(x + 90)
-    return getfield(x, f)
-end
-
-function Base.setproperty!(x::Ptr{ImGuiViewport}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
-end
-
 struct ImVec4
     x::Cfloat
     y::Cfloat
@@ -232,6 +184,275 @@ end
 
 const ImDrawListFlags = Cint
 
+struct ImVector_float
+    Size::Cint
+    Capacity::Cint
+    Data::Ptr{Cfloat}
+end
+
+const ImWchar16 = Cushort
+
+const ImWchar = ImWchar16
+
+struct ImVector_ImWchar
+    Size::Cint
+    Capacity::Cint
+    Data::Ptr{ImWchar}
+end
+
+struct ImFontGlyph
+    data::NTuple{40, UInt8}
+end
+
+function Base.getproperty(x::Ptr{ImFontGlyph}, f::Symbol)
+    f === :Colored && return (Ptr{Cuint}(x + 0), 0, 1)
+    f === :Visible && return (Ptr{Cuint}(x + 0), 1, 1)
+    f === :Codepoint && return (Ptr{Cuint}(x + 0), 2, 30)
+    f === :AdvanceX && return Ptr{Cfloat}(x + 4)
+    f === :X0 && return Ptr{Cfloat}(x + 8)
+    f === :Y0 && return Ptr{Cfloat}(x + 12)
+    f === :X1 && return Ptr{Cfloat}(x + 16)
+    f === :Y1 && return Ptr{Cfloat}(x + 20)
+    f === :U0 && return Ptr{Cfloat}(x + 24)
+    f === :V0 && return Ptr{Cfloat}(x + 28)
+    f === :U1 && return Ptr{Cfloat}(x + 32)
+    f === :V1 && return Ptr{Cfloat}(x + 36)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::ImFontGlyph, f::Symbol)
+    r = Ref{ImFontGlyph}(x)
+    ptr = Base.unsafe_convert(Ptr{ImFontGlyph}, r)
+    fptr = getproperty(ptr, f)
+    begin
+        if fptr isa Ptr
+            return GC.@preserve(r, unsafe_load(fptr))
+        else
+            (baseptr, offset, width) = fptr
+            ty = eltype(baseptr)
+            baseptr32 = convert(Ptr{UInt32}, baseptr)
+            u64 = GC.@preserve(r, unsafe_load(baseptr32))
+            if offset + width > 32
+                u64 |= GC.@preserve(r, unsafe_load(baseptr32 + 4)) << 32
+            end
+            u64 = u64 >> offset & (1 << width - 1)
+            return u64 % ty
+        end
+    end
+end
+
+function Base.setproperty!(x::Ptr{ImFontGlyph}, f::Symbol, v)
+    fptr = getproperty(x, f)
+    if fptr isa Ptr
+        unsafe_store!(getproperty(x, f), v)
+    else
+        (baseptr, offset, width) = fptr
+        baseptr32 = convert(Ptr{UInt32}, baseptr)
+        u64 = unsafe_load(baseptr32)
+        straddle = offset + width > 32
+        if straddle
+            u64 |= unsafe_load(baseptr32 + 4) << 32
+        end
+        mask = 1 << width - 1
+        u64 &= ~(mask << offset)
+        u64 |= (unsigned(v) & mask) << offset
+        unsafe_store!(baseptr32, u64 & typemax(UInt32))
+        if straddle
+            unsafe_store!(baseptr32 + 4, u64 >> 32)
+        end
+    end
+end
+
+struct ImVector_ImFontGlyph
+    Size::Cint
+    Capacity::Cint
+    Data::Ptr{ImFontGlyph}
+end
+
+const ImFontAtlasFlags = Cint
+
+struct ImVector_ImFontPtr
+    Size::Cint
+    Capacity::Cint
+    Data::Ptr{Ptr{Cvoid}} # Data::Ptr{Ptr{ImFont}}
+end
+
+function Base.getproperty(x::ImVector_ImFontPtr, f::Symbol)
+    f === :Data && return Ptr{Ptr{ImFont}}(getfield(x, f))
+    return getfield(x, f)
+end
+
+struct ImFontAtlasCustomRect
+    Width::Cushort
+    Height::Cushort
+    X::Cushort
+    Y::Cushort
+    GlyphID::Cuint
+    GlyphAdvanceX::Cfloat
+    GlyphOffset::ImVec2
+    Font::Ptr{Cvoid} # Font::Ptr{ImFont}
+end
+
+function Base.getproperty(x::ImFontAtlasCustomRect, f::Symbol)
+    f === :Font && return Ptr{ImFont}(getfield(x, f))
+    return getfield(x, f)
+end
+
+struct ImVector_ImFontAtlasCustomRect
+    Size::Cint
+    Capacity::Cint
+    Data::Ptr{ImFontAtlasCustomRect}
+end
+
+struct ImFontConfig
+    FontData::Ptr{Cvoid}
+    FontDataSize::Cint
+    FontDataOwnedByAtlas::Bool
+    FontNo::Cint
+    SizePixels::Cfloat
+    OversampleH::Cint
+    OversampleV::Cint
+    PixelSnapH::Bool
+    GlyphExtraSpacing::ImVec2
+    GlyphOffset::ImVec2
+    GlyphRanges::Ptr{ImWchar}
+    GlyphMinAdvanceX::Cfloat
+    GlyphMaxAdvanceX::Cfloat
+    MergeMode::Bool
+    FontBuilderFlags::Cuint
+    RasterizerMultiply::Cfloat
+    EllipsisChar::ImWchar
+    Name::NTuple{40, Cchar}
+    DstFont::Ptr{Cvoid} # DstFont::Ptr{ImFont}
+end
+
+function Base.getproperty(x::ImFontConfig, f::Symbol)
+    f === :DstFont && return Ptr{ImFont}(getfield(x, f))
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::Ptr{ImFontConfig}, f::Symbol)
+    f === :FontData && return Ptr{Ptr{Cvoid}}(x + 0)
+    f === :FontDataSize && return Ptr{Cint}(x + 8)
+    f === :FontDataOwnedByAtlas && return Ptr{Bool}(x + 12)
+    f === :FontNo && return Ptr{Cint}(x + 16)
+    f === :SizePixels && return Ptr{Cfloat}(x + 20)
+    f === :OversampleH && return Ptr{Cint}(x + 24)
+    f === :OversampleV && return Ptr{Cint}(x + 28)
+    f === :PixelSnapH && return Ptr{Bool}(x + 32)
+    f === :GlyphExtraSpacing && return Ptr{ImVec2}(x + 36)
+    f === :GlyphOffset && return Ptr{ImVec2}(x + 44)
+    f === :GlyphRanges && return Ptr{Ptr{ImWchar}}(x + 56)
+    f === :GlyphMinAdvanceX && return Ptr{Cfloat}(x + 64)
+    f === :GlyphMaxAdvanceX && return Ptr{Cfloat}(x + 68)
+    f === :MergeMode && return Ptr{Bool}(x + 72)
+    f === :FontBuilderFlags && return Ptr{Cuint}(x + 76)
+    f === :RasterizerMultiply && return Ptr{Cfloat}(x + 80)
+    f === :EllipsisChar && return Ptr{ImWchar}(x + 84)
+    f === :Name && return Ptr{NTuple{40, Cchar}}(x + 86)
+    f === :DstFont && return Ptr{Ptr{ImFont}}(x + 128)
+    return getfield(x, f)
+end
+
+function Base.setproperty!(x::Ptr{ImFontConfig}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+struct ImVector_ImFontConfig
+    Size::Cint
+    Capacity::Cint
+    Data::Ptr{ImFontConfig}
+end
+
+struct ImFontBuilderIO
+    FontBuilder_Build::Ptr{Cvoid}
+end
+
+struct ImFontAtlas
+    Flags::ImFontAtlasFlags
+    TexID::ImTextureID
+    TexDesiredWidth::Cint
+    TexGlyphPadding::Cint
+    Locked::Bool
+    TexPixelsUseColors::Bool
+    TexPixelsAlpha8::Ptr{Cuchar}
+    TexPixelsRGBA32::Ptr{Cuint}
+    TexWidth::Cint
+    TexHeight::Cint
+    TexUvScale::ImVec2
+    TexUvWhitePixel::ImVec2
+    Fonts::ImVector_ImFontPtr
+    CustomRects::ImVector_ImFontAtlasCustomRect
+    ConfigData::ImVector_ImFontConfig
+    TexUvLines::NTuple{64, ImVec4}
+    FontBuilderIO::Ptr{ImFontBuilderIO}
+    FontBuilderFlags::Cuint
+    PackIdMouseCursors::Cint
+    PackIdLines::Cint
+end
+function Base.getproperty(x::Ptr{ImFontAtlas}, f::Symbol)
+    f === :Flags && return Ptr{ImFontAtlasFlags}(x + 0)
+    f === :TexID && return Ptr{ImTextureID}(x + 8)
+    f === :TexDesiredWidth && return Ptr{Cint}(x + 16)
+    f === :TexGlyphPadding && return Ptr{Cint}(x + 20)
+    f === :Locked && return Ptr{Bool}(x + 24)
+    f === :TexPixelsUseColors && return Ptr{Bool}(x + 25)
+    f === :TexPixelsAlpha8 && return Ptr{Ptr{Cuchar}}(x + 32)
+    f === :TexPixelsRGBA32 && return Ptr{Ptr{Cuint}}(x + 40)
+    f === :TexWidth && return Ptr{Cint}(x + 48)
+    f === :TexHeight && return Ptr{Cint}(x + 52)
+    f === :TexUvScale && return Ptr{ImVec2}(x + 56)
+    f === :TexUvWhitePixel && return Ptr{ImVec2}(x + 64)
+    f === :Fonts && return Ptr{ImVector_ImFontPtr}(x + 72)
+    f === :CustomRects && return Ptr{ImVector_ImFontAtlasCustomRect}(x + 88)
+    f === :ConfigData && return Ptr{ImVector_ImFontConfig}(x + 104)
+    f === :TexUvLines && return Ptr{NTuple{64, ImVec4}}(x + 120)
+    f === :FontBuilderIO && return Ptr{Ptr{ImFontBuilderIO}}(x + 1144)
+    f === :FontBuilderFlags && return Ptr{Cuint}(x + 1152)
+    f === :PackIdMouseCursors && return Ptr{Cint}(x + 1156)
+    f === :PackIdLines && return Ptr{Cint}(x + 1160)
+    return getfield(x, f)
+end
+
+function Base.setproperty!(x::Ptr{ImFontAtlas}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
+end
+
+
+struct ImFont
+    IndexAdvanceX::ImVector_float
+    FallbackAdvanceX::Cfloat
+    FontSize::Cfloat
+    IndexLookup::ImVector_ImWchar
+    Glyphs::ImVector_ImFontGlyph
+    FallbackGlyph::Ptr{ImFontGlyph}
+    ContainerAtlas::Ptr{ImFontAtlas}
+    ConfigData::Ptr{ImFontConfig}
+    ConfigDataCount::Cshort
+    FallbackChar::ImWchar
+    EllipsisChar::ImWchar
+    DirtyLookupTables::Bool
+    Scale::Cfloat
+    Ascent::Cfloat
+    Descent::Cfloat
+    MetricsTotalSurface::Cint
+    Used4kPagesMap::NTuple{2, ImU8}
+end
+
+struct ImDrawListSharedData
+    TexUvWhitePixel::ImVec2
+    Font::Ptr{ImFont}
+    FontSize::Cfloat
+    CurveTessellationTol::Cfloat
+    CircleSegmentMaxError::Cfloat
+    ClipRectFullscreen::ImVec4
+    InitialFlags::ImDrawListFlags
+    ArcFastVtx::NTuple{48, ImVec2}
+    ArcFastRadiusCutoff::Cfloat
+    CircleSegmentCounts::NTuple{64, ImU8}
+    TexUvLines::Ptr{ImVec4}
+end
+
 struct ImVector_ImVec4
     Size::Cint
     Capacity::Cint
@@ -279,7 +500,7 @@ struct ImDrawList
     VtxBuffer::ImVector_ImDrawVert
     Flags::ImDrawListFlags
     _VtxCurrentIdx::Cuint
-    _Data::Ptr{Cvoid} # _Data::Ptr{ImDrawListSharedData}
+    _Data::Ptr{ImDrawListSharedData}
     _OwnerName::Ptr{Cchar}
     _VtxWritePtr::Ptr{ImDrawVert}
     _IdxWritePtr::Ptr{ImDrawIdx}
@@ -290,12 +511,6 @@ struct ImDrawList
     _Splitter::ImDrawListSplitter
     _FringeScale::Cfloat
 end
-
-function Base.getproperty(x::ImDrawList, f::Symbol)
-    f === :_Data && return Ptr{ImDrawListSharedData}(getfield(x, f))
-    return getfield(x, f)
-end
-
 function Base.getproperty(x::Ptr{ImDrawList}, f::Symbol)
     f === :CmdBuffer && return Ptr{ImVector_ImDrawCmd}(x + 0)
     f === :IdxBuffer && return Ptr{ImVector_ImDrawIdx}(x + 16)
@@ -319,6 +534,7 @@ function Base.setproperty!(x::Ptr{ImDrawList}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
+
 struct ImDrawData
     Valid::Bool
     CmdListsCount::Cint
@@ -328,7 +544,12 @@ struct ImDrawData
     DisplayPos::ImVec2
     DisplaySize::ImVec2
     FramebufferScale::ImVec2
-    OwnerViewport::Ptr{ImGuiViewport}
+    OwnerViewport::Ptr{Cvoid} # OwnerViewport::Ptr{ImGuiViewport}
+end
+
+function Base.getproperty(x::ImDrawData, f::Symbol)
+    f === :OwnerViewport && return Ptr{ImGuiViewport}(getfield(x, f))
+    return getfield(x, f)
 end
 
 function Base.getproperty(x::Ptr{ImDrawData}, f::Symbol)
@@ -348,130 +569,79 @@ function Base.setproperty!(x::Ptr{ImDrawData}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
-struct ImVector_ImDrawListPtr
-    Size::Cint
-    Capacity::Cint
-    Data::Ptr{Ptr{ImDrawList}}
+struct ImGuiViewport
+    ID::ImGuiID
+    Flags::ImGuiViewportFlags
+    Pos::ImVec2
+    Size::ImVec2
+    WorkPos::ImVec2
+    WorkSize::ImVec2
+    DpiScale::Cfloat
+    ParentViewportId::ImGuiID
+    DrawData::Ptr{ImDrawData}
+    RendererUserData::Ptr{Cvoid}
+    PlatformUserData::Ptr{Cvoid}
+    PlatformHandle::Ptr{Cvoid}
+    PlatformHandleRaw::Ptr{Cvoid}
+    PlatformRequestMove::Bool
+    PlatformRequestResize::Bool
+    PlatformRequestClose::Bool
 end
-
-struct ImDrawDataBuilder
-    Layers::NTuple{2, ImVector_ImDrawListPtr}
-end
-
-struct ImGuiViewportP
-    _ImGuiViewport::ImGuiViewport
-    Idx::Cint
-    LastFrameActive::Cint
-    LastFrontMostStampCount::Cint
-    LastNameHash::ImGuiID
-    LastPos::ImVec2
-    Alpha::Cfloat
-    LastAlpha::Cfloat
-    PlatformMonitor::Cshort
-    PlatformWindowCreated::Bool
-    Window::Ptr{Cvoid} # Window::Ptr{ImGuiWindow}
-    DrawListsLastFrame::NTuple{2, Cint}
-    DrawLists::NTuple{2, Ptr{ImDrawList}}
-    DrawDataP::ImDrawData
-    DrawDataBuilder::ImDrawDataBuilder
-    LastPlatformPos::ImVec2
-    LastPlatformSize::ImVec2
-    LastRendererSize::ImVec2
-    WorkOffsetMin::ImVec2
-    WorkOffsetMax::ImVec2
-    CurrWorkOffsetMin::ImVec2
-    CurrWorkOffsetMax::ImVec2
-end
-
-function Base.getproperty(x::ImGuiViewportP, f::Symbol)
-    f === :Window && return Ptr{ImGuiWindow}(getfield(x, f))
+function Base.getproperty(x::Ptr{ImGuiViewport}, f::Symbol)
+    f === :ID && return Ptr{ImGuiID}(x + 0)
+    f === :Flags && return Ptr{ImGuiViewportFlags}(x + 4)
+    f === :Pos && return Ptr{ImVec2}(x + 8)
+    f === :Size && return Ptr{ImVec2}(x + 16)
+    f === :WorkPos && return Ptr{ImVec2}(x + 24)
+    f === :WorkSize && return Ptr{ImVec2}(x + 32)
+    f === :DpiScale && return Ptr{Cfloat}(x + 40)
+    f === :ParentViewportId && return Ptr{ImGuiID}(x + 44)
+    f === :DrawData && return Ptr{Ptr{ImDrawData}}(x + 48)
+    f === :RendererUserData && return Ptr{Ptr{Cvoid}}(x + 56)
+    f === :PlatformUserData && return Ptr{Ptr{Cvoid}}(x + 64)
+    f === :PlatformHandle && return Ptr{Ptr{Cvoid}}(x + 72)
+    f === :PlatformHandleRaw && return Ptr{Ptr{Cvoid}}(x + 80)
+    f === :PlatformRequestMove && return Ptr{Bool}(x + 88)
+    f === :PlatformRequestResize && return Ptr{Bool}(x + 89)
+    f === :PlatformRequestClose && return Ptr{Bool}(x + 90)
     return getfield(x, f)
 end
 
-struct ImGuiWindowDockStyle
-    Colors::NTuple{6, ImU32}
+function Base.setproperty!(x::Ptr{ImGuiViewport}, f::Symbol, v)
+    unsafe_store!(getproperty(x, f), v)
 end
 
-struct ImGuiPtrOrIndex
-    Ptr::Ptr{Cvoid}
-    Index::Cint
+
+const ImGuiWindowFlags = Cint
+
+const ImGuiTabItemFlags = Cint
+
+const ImGuiDockNodeFlags = Cint
+
+struct ImGuiWindowClass
+    ClassId::ImGuiID
+    ParentViewportId::ImGuiID
+    ViewportFlagsOverrideSet::ImGuiViewportFlags
+    ViewportFlagsOverrideClear::ImGuiViewportFlags
+    TabItemFlagsOverrideSet::ImGuiTabItemFlags
+    DockNodeFlagsOverrideSet::ImGuiDockNodeFlags
+    DockNodeFlagsOverrideClear::ImGuiDockNodeFlags
+    DockingAlwaysTabBar::Bool
+    DockingAllowUnclassed::Bool
 end
 
-struct ImGuiShrinkWidthItem
-    Index::Cint
-    Width::Cfloat
-end
+const ImGuiDir = Cint
 
-struct ImGuiDataTypeTempStorage
-    Data::NTuple{8, ImU8}
-end
+const ImGuiCond = Cint
 
-struct ImVec2ih
-    x::Cshort
-    y::Cshort
+struct ImVector_ImGuiID
+    Size::Cint
+    Capacity::Cint
+    Data::Ptr{ImGuiID}
 end
 
 struct ImVec1
     x::Cfloat
-end
-
-struct StbTexteditRow
-    x0::Cfloat
-    x1::Cfloat
-    baseline_y_delta::Cfloat
-    ymin::Cfloat
-    ymax::Cfloat
-    num_chars::Cint
-end
-
-struct StbUndoRecord
-    where::Cint
-    insert_length::Cint
-    delete_length::Cint
-    char_storage::Cint
-end
-
-const ImWchar16 = Cushort
-
-const ImWchar = ImWchar16
-
-struct StbUndoState
-    undo_rec::NTuple{99, StbUndoRecord}
-    undo_char::NTuple{999, ImWchar}
-    undo_point::Cshort
-    redo_point::Cshort
-    undo_char_point::Cint
-    redo_char_point::Cint
-end
-
-struct STB_TexteditState
-    cursor::Cint
-    select_start::Cint
-    select_end::Cint
-    insert_mode::Cuchar
-    row_count_per_page::Cint
-    cursor_at_end_of_line::Cuchar
-    initialized::Cuchar
-    has_preferred_x::Cuchar
-    single_line::Cuchar
-    padding1::Cuchar
-    padding2::Cuchar
-    padding3::Cuchar
-    preferred_x::Cfloat
-    undostate::StbUndoState
-end
-
-struct ImGuiWindowSettings
-    ID::ImGuiID
-    Pos::ImVec2ih
-    Size::ImVec2ih
-    ViewportPos::ImVec2ih
-    ViewportId::ImGuiID
-    DockId::ImGuiID
-    ClassId::ImGuiID
-    DockOrder::Cshort
-    Collapsed::Bool
-    WantApply::Bool
 end
 
 const ImGuiItemStatusFlags = Cint
@@ -578,12 +748,6 @@ const ImGuiLayoutType = Cint
 
 const ImGuiItemFlags = Cint
 
-struct ImVector_float
-    Size::Cint
-    Capacity::Cint
-    Data::Ptr{Cfloat}
-end
-
 struct ImGuiStackSizes
     SizeOfIDStack::Cshort
     SizeOfColorStack::Cshort
@@ -638,38 +802,195 @@ struct ImGuiWindowTempData
     StackSizesOnBegin::ImGuiStackSizes
 end
 
-const ImGuiWindowFlags = Cint
-
-const ImGuiTabItemFlags = Cint
-
-const ImGuiDockNodeFlags = Cint
-
-struct ImGuiWindowClass
-    ClassId::ImGuiID
-    ParentViewportId::ImGuiID
-    ViewportFlagsOverrideSet::ImGuiViewportFlags
-    ViewportFlagsOverrideClear::ImGuiViewportFlags
-    TabItemFlagsOverrideSet::ImGuiTabItemFlags
-    DockNodeFlagsOverrideSet::ImGuiDockNodeFlags
-    DockNodeFlagsOverrideClear::ImGuiDockNodeFlags
-    DockingAlwaysTabBar::Bool
-    DockingAllowUnclassed::Bool
-end
-
-const ImGuiDir = Cint
-
-const ImGuiCond = Cint
-
-struct ImVector_ImGuiID
-    Size::Cint
-    Capacity::Cint
-    Data::Ptr{ImGuiID}
+struct ImVec2ih
+    x::Cshort
+    y::Cshort
 end
 
 struct ImVector_ImGuiOldColumns
     Size::Cint
     Capacity::Cint
     Data::Ptr{ImGuiOldColumns}
+end
+
+struct ImGuiWindowDockStyle
+    Colors::NTuple{6, ImU32}
+end
+
+@cenum ImGuiDockNodeState::UInt32 begin
+    ImGuiDockNodeState_Unknown = 0
+    ImGuiDockNodeState_HostWindowHiddenBecauseSingleWindow = 1
+    ImGuiDockNodeState_HostWindowHiddenBecauseWindowsAreResizing = 2
+    ImGuiDockNodeState_HostWindowVisible = 3
+end
+
+const ImS16 = Cshort
+
+struct ImGuiTabItem
+    ID::ImGuiID
+    Flags::ImGuiTabItemFlags
+    Window::Ptr{Cvoid} # Window::Ptr{ImGuiWindow}
+    LastFrameVisible::Cint
+    LastFrameSelected::Cint
+    Offset::Cfloat
+    Width::Cfloat
+    ContentWidth::Cfloat
+    NameOffset::ImS16
+    BeginOrder::ImS16
+    IndexDuringLayout::ImS16
+    WantClose::Bool
+end
+
+function Base.getproperty(x::ImGuiTabItem, f::Symbol)
+    f === :Window && return Ptr{ImGuiWindow}(getfield(x, f))
+    return getfield(x, f)
+end
+
+struct ImVector_ImGuiTabItem
+    Size::Cint
+    Capacity::Cint
+    Data::Ptr{ImGuiTabItem}
+end
+
+const ImGuiTabBarFlags = Cint
+
+struct ImVector_char
+    Size::Cint
+    Capacity::Cint
+    Data::Ptr{Cchar}
+end
+
+struct ImGuiTextBuffer
+    Buf::ImVector_char
+end
+
+struct ImGuiTabBar
+    Tabs::ImVector_ImGuiTabItem
+    Flags::ImGuiTabBarFlags
+    ID::ImGuiID
+    SelectedTabId::ImGuiID
+    NextSelectedTabId::ImGuiID
+    VisibleTabId::ImGuiID
+    CurrFrameVisible::Cint
+    PrevFrameVisible::Cint
+    BarRect::ImRect
+    CurrTabsContentsHeight::Cfloat
+    PrevTabsContentsHeight::Cfloat
+    WidthAllTabs::Cfloat
+    WidthAllTabsIdeal::Cfloat
+    ScrollingAnim::Cfloat
+    ScrollingTarget::Cfloat
+    ScrollingTargetDistToVisibility::Cfloat
+    ScrollingSpeed::Cfloat
+    ScrollingRectMinX::Cfloat
+    ScrollingRectMaxX::Cfloat
+    ReorderRequestTabId::ImGuiID
+    ReorderRequestDir::ImS8
+    BeginCount::ImS8
+    WantLayout::Bool
+    VisibleTabWasSubmitted::Bool
+    TabsAddedNew::Bool
+    TabsActiveCount::ImS16
+    LastTabItemIdx::ImS16
+    ItemSpacingY::Cfloat
+    FramePadding::ImVec2
+    BackupCursorPos::ImVec2
+    TabsNames::ImGuiTextBuffer
+end
+
+@cenum ImGuiAxis::Int32 begin
+    ImGuiAxis_None = -1
+    ImGuiAxis_X = 0
+    ImGuiAxis_Y = 1
+end
+
+const ImGuiDataAuthority = Cint
+
+struct ImGuiDockNode
+    data::NTuple{192, UInt8}
+end
+
+function Base.getproperty(x::Ptr{ImGuiDockNode}, f::Symbol)
+    f === :ID && return Ptr{ImGuiID}(x + 0)
+    f === :SharedFlags && return Ptr{ImGuiDockNodeFlags}(x + 4)
+    f === :LocalFlags && return Ptr{ImGuiDockNodeFlags}(x + 8)
+    f === :State && return Ptr{ImGuiDockNodeState}(x + 12)
+    f === :ParentNode && return Ptr{Ptr{ImGuiDockNode}}(x + 16)
+    f === :ChildNodes && return Ptr{NTuple{2, Ptr{ImGuiDockNode}}}(x + 24)
+    f === :Windows && return Ptr{ImVector_ImGuiWindowPtr}(x + 40)
+    f === :TabBar && return Ptr{Ptr{ImGuiTabBar}}(x + 56)
+    f === :Pos && return Ptr{ImVec2}(x + 64)
+    f === :Size && return Ptr{ImVec2}(x + 72)
+    f === :SizeRef && return Ptr{ImVec2}(x + 80)
+    f === :SplitAxis && return Ptr{ImGuiAxis}(x + 88)
+    f === :WindowClass && return Ptr{ImGuiWindowClass}(x + 92)
+    f === :HostWindow && return Ptr{Ptr{ImGuiWindow}}(x + 128)
+    f === :VisibleWindow && return Ptr{Ptr{ImGuiWindow}}(x + 136)
+    f === :CentralNode && return Ptr{Ptr{ImGuiDockNode}}(x + 144)
+    f === :OnlyNodeWithWindows && return Ptr{Ptr{ImGuiDockNode}}(x + 152)
+    f === :LastFrameAlive && return Ptr{Cint}(x + 160)
+    f === :LastFrameActive && return Ptr{Cint}(x + 164)
+    f === :LastFrameFocused && return Ptr{Cint}(x + 168)
+    f === :LastFocusedNodeId && return Ptr{ImGuiID}(x + 172)
+    f === :SelectedTabId && return Ptr{ImGuiID}(x + 176)
+    f === :WantCloseTabId && return Ptr{ImGuiID}(x + 180)
+    f === :AuthorityForPos && return (Ptr{ImGuiDataAuthority}(x + 184), 0, 3)
+    f === :AuthorityForSize && return (Ptr{ImGuiDataAuthority}(x + 184), 3, 3)
+    f === :AuthorityForViewport && return (Ptr{ImGuiDataAuthority}(x + 184), 6, 3)
+    f === :IsVisible && return (Ptr{Bool}(x + 184), 9, 1)
+    f === :IsFocused && return (Ptr{Bool}(x + 184), 10, 1)
+    f === :HasCloseButton && return (Ptr{Bool}(x + 184), 11, 1)
+    f === :HasWindowMenuButton && return (Ptr{Bool}(x + 184), 12, 1)
+    f === :WantCloseAll && return (Ptr{Bool}(x + 184), 13, 1)
+    f === :WantLockSizeOnce && return (Ptr{Bool}(x + 184), 14, 1)
+    f === :WantMouseMove && return (Ptr{Bool}(x + 184), 15, 1)
+    f === :WantHiddenTabBarUpdate && return (Ptr{Bool}(x + 184), 16, 1)
+    f === :WantHiddenTabBarToggle && return (Ptr{Bool}(x + 184), 17, 1)
+    f === :MarkedForPosSizeWrite && return (Ptr{Bool}(x + 184), 18, 1)
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::ImGuiDockNode, f::Symbol)
+    r = Ref{ImGuiDockNode}(x)
+    ptr = Base.unsafe_convert(Ptr{ImGuiDockNode}, r)
+    fptr = getproperty(ptr, f)
+    begin
+        if fptr isa Ptr
+            return GC.@preserve(r, unsafe_load(fptr))
+        else
+            (baseptr, offset, width) = fptr
+            ty = eltype(baseptr)
+            baseptr32 = convert(Ptr{UInt32}, baseptr)
+            u64 = GC.@preserve(r, unsafe_load(baseptr32))
+            if offset + width > 32
+                u64 |= GC.@preserve(r, unsafe_load(baseptr32 + 4)) << 32
+            end
+            u64 = u64 >> offset & (1 << width - 1)
+            return u64 % ty
+        end
+    end
+end
+
+function Base.setproperty!(x::Ptr{ImGuiDockNode}, f::Symbol, v)
+    fptr = getproperty(x, f)
+    if fptr isa Ptr
+        unsafe_store!(getproperty(x, f), v)
+    else
+        (baseptr, offset, width) = fptr
+        baseptr32 = convert(Ptr{UInt32}, baseptr)
+        u64 = unsafe_load(baseptr32)
+        straddle = offset + width > 32
+        if straddle
+            u64 |= unsafe_load(baseptr32 + 4) << 32
+        end
+        mask = 1 << width - 1
+        u64 &= ~(mask << offset)
+        u64 |= (unsigned(v) & mask) << offset
+        unsafe_store!(baseptr32, u64 & typemax(UInt32))
+        if straddle
+            unsafe_store!(baseptr32 + 4, u64 >> 32)
+        end
+    end
 end
 
 struct ImGuiWindow
@@ -826,6 +1147,110 @@ function Base.setproperty!(x::Ptr{ImGuiWindow}, f::Symbol, v)
     end
 end
 
+struct ImVector_ImDrawListPtr
+    Size::Cint
+    Capacity::Cint
+    Data::Ptr{Ptr{ImDrawList}}
+end
+
+struct ImDrawDataBuilder
+    Layers::NTuple{2, ImVector_ImDrawListPtr}
+end
+
+struct ImGuiViewportP
+    _ImGuiViewport::ImGuiViewport
+    Idx::Cint
+    LastFrameActive::Cint
+    LastFrontMostStampCount::Cint
+    LastNameHash::ImGuiID
+    LastPos::ImVec2
+    Alpha::Cfloat
+    LastAlpha::Cfloat
+    PlatformMonitor::Cshort
+    PlatformWindowCreated::Bool
+    Window::Ptr{ImGuiWindow}
+    DrawListsLastFrame::NTuple{2, Cint}
+    DrawLists::NTuple{2, Ptr{ImDrawList}}
+    DrawDataP::ImDrawData
+    DrawDataBuilder::ImDrawDataBuilder
+    LastPlatformPos::ImVec2
+    LastPlatformSize::ImVec2
+    LastRendererSize::ImVec2
+    WorkOffsetMin::ImVec2
+    WorkOffsetMax::ImVec2
+    CurrWorkOffsetMin::ImVec2
+    CurrWorkOffsetMax::ImVec2
+end
+
+struct ImGuiPtrOrIndex
+    Ptr::Ptr{Cvoid}
+    Index::Cint
+end
+
+struct ImGuiShrinkWidthItem
+    Index::Cint
+    Width::Cfloat
+end
+
+struct ImGuiDataTypeTempStorage
+    Data::NTuple{8, ImU8}
+end
+
+struct StbTexteditRow
+    x0::Cfloat
+    x1::Cfloat
+    baseline_y_delta::Cfloat
+    ymin::Cfloat
+    ymax::Cfloat
+    num_chars::Cint
+end
+
+struct StbUndoRecord
+    where::Cint
+    insert_length::Cint
+    delete_length::Cint
+    char_storage::Cint
+end
+
+struct StbUndoState
+    undo_rec::NTuple{99, StbUndoRecord}
+    undo_char::NTuple{999, ImWchar}
+    undo_point::Cshort
+    redo_point::Cshort
+    undo_char_point::Cint
+    redo_char_point::Cint
+end
+
+struct STB_TexteditState
+    cursor::Cint
+    select_start::Cint
+    select_end::Cint
+    insert_mode::Cuchar
+    row_count_per_page::Cint
+    cursor_at_end_of_line::Cuchar
+    initialized::Cuchar
+    has_preferred_x::Cuchar
+    single_line::Cuchar
+    padding1::Cuchar
+    padding2::Cuchar
+    padding3::Cuchar
+    preferred_x::Cfloat
+    undostate::StbUndoState
+end
+
+struct ImGuiWindowSettings
+    ID::ImGuiID
+    Pos::ImVec2ih
+    Size::ImVec2ih
+    ViewportPos::ImVec2ih
+    ViewportId::ImGuiID
+    DockId::ImGuiID
+    ClassId::ImGuiID
+    DockOrder::Cshort
+    Collapsed::Bool
+    WantApply::Bool
+end
+
 mutable struct ImGuiTableColumnsSettings end
 
 const ImGuiTableFlags = Cint
@@ -840,8 +1265,6 @@ struct ImGuiTableSettings
 end
 
 const ImGuiTableColumnFlags = Cint
-
-const ImS16 = Cshort
 
 const ImGuiTableDrawChannelIdx = ImU8
 
@@ -954,16 +1377,6 @@ end
 const ImU64 = UInt64
 
 const ImGuiTableRowFlags = Cint
-
-struct ImVector_char
-    Size::Cint
-    Capacity::Cint
-    Data::Ptr{Cchar}
-end
-
-struct ImGuiTextBuffer
-    Buf::ImVector_char
-end
 
 const ImGuiSortDirection = Cint
 
@@ -1196,63 +1609,6 @@ function Base.setproperty!(x::Ptr{ImGuiTable}, f::Symbol, v)
     end
 end
 
-struct ImGuiTabItem
-    ID::ImGuiID
-    Flags::ImGuiTabItemFlags
-    Window::Ptr{ImGuiWindow}
-    LastFrameVisible::Cint
-    LastFrameSelected::Cint
-    Offset::Cfloat
-    Width::Cfloat
-    ContentWidth::Cfloat
-    NameOffset::ImS16
-    BeginOrder::ImS16
-    IndexDuringLayout::ImS16
-    WantClose::Bool
-end
-
-struct ImVector_ImGuiTabItem
-    Size::Cint
-    Capacity::Cint
-    Data::Ptr{ImGuiTabItem}
-end
-
-const ImGuiTabBarFlags = Cint
-
-struct ImGuiTabBar
-    Tabs::ImVector_ImGuiTabItem
-    Flags::ImGuiTabBarFlags
-    ID::ImGuiID
-    SelectedTabId::ImGuiID
-    NextSelectedTabId::ImGuiID
-    VisibleTabId::ImGuiID
-    CurrFrameVisible::Cint
-    PrevFrameVisible::Cint
-    BarRect::ImRect
-    CurrTabsContentsHeight::Cfloat
-    PrevTabsContentsHeight::Cfloat
-    WidthAllTabs::Cfloat
-    WidthAllTabsIdeal::Cfloat
-    ScrollingAnim::Cfloat
-    ScrollingTarget::Cfloat
-    ScrollingTargetDistToVisibility::Cfloat
-    ScrollingSpeed::Cfloat
-    ScrollingRectMinX::Cfloat
-    ScrollingRectMaxX::Cfloat
-    ReorderRequestTabId::ImGuiID
-    ReorderRequestDir::ImS8
-    BeginCount::ImS8
-    WantLayout::Bool
-    VisibleTabWasSubmitted::Bool
-    TabsAddedNew::Bool
-    TabsActiveCount::ImS16
-    LastTabItemIdx::ImS16
-    ItemSpacingY::Cfloat
-    FramePadding::ImVec2
-    BackupCursorPos::ImVec2
-    TabsNames::ImGuiTextBuffer
-end
-
 const ImGuiStyleVar = Cint
 
 struct ImGuiStyleMod
@@ -1365,12 +1721,6 @@ struct ImGuiLastItemDataBackup
     LastItemDisplayRect::ImRect
 end
 
-struct ImVector_ImWchar
-    Size::Cint
-    Capacity::Cint
-    Data::Ptr{ImWchar}
-end
-
 const ImGuiInputTextFlags = Cint
 
 # typedef int ( * ImGuiInputTextCallback ) ( ImGuiInputTextCallbackData * data )
@@ -1411,108 +1761,6 @@ struct ImGuiGroupData
 end
 
 mutable struct ImGuiDockNodeSettings end
-
-@cenum ImGuiDockNodeState::UInt32 begin
-    ImGuiDockNodeState_Unknown = 0
-    ImGuiDockNodeState_HostWindowHiddenBecauseSingleWindow = 1
-    ImGuiDockNodeState_HostWindowHiddenBecauseWindowsAreResizing = 2
-    ImGuiDockNodeState_HostWindowVisible = 3
-end
-
-@cenum ImGuiAxis::Int32 begin
-    ImGuiAxis_None = -1
-    ImGuiAxis_X = 0
-    ImGuiAxis_Y = 1
-end
-
-const ImGuiDataAuthority = Cint
-
-struct ImGuiDockNode
-    data::NTuple{192, UInt8}
-end
-
-function Base.getproperty(x::Ptr{ImGuiDockNode}, f::Symbol)
-    f === :ID && return Ptr{ImGuiID}(x + 0)
-    f === :SharedFlags && return Ptr{ImGuiDockNodeFlags}(x + 4)
-    f === :LocalFlags && return Ptr{ImGuiDockNodeFlags}(x + 8)
-    f === :State && return Ptr{ImGuiDockNodeState}(x + 12)
-    f === :ParentNode && return Ptr{Ptr{ImGuiDockNode}}(x + 16)
-    f === :ChildNodes && return Ptr{NTuple{2, Ptr{ImGuiDockNode}}}(x + 24)
-    f === :Windows && return Ptr{ImVector_ImGuiWindowPtr}(x + 40)
-    f === :TabBar && return Ptr{Ptr{ImGuiTabBar}}(x + 56)
-    f === :Pos && return Ptr{ImVec2}(x + 64)
-    f === :Size && return Ptr{ImVec2}(x + 72)
-    f === :SizeRef && return Ptr{ImVec2}(x + 80)
-    f === :SplitAxis && return Ptr{ImGuiAxis}(x + 88)
-    f === :WindowClass && return Ptr{ImGuiWindowClass}(x + 92)
-    f === :HostWindow && return Ptr{Ptr{ImGuiWindow}}(x + 128)
-    f === :VisibleWindow && return Ptr{Ptr{ImGuiWindow}}(x + 136)
-    f === :CentralNode && return Ptr{Ptr{ImGuiDockNode}}(x + 144)
-    f === :OnlyNodeWithWindows && return Ptr{Ptr{ImGuiDockNode}}(x + 152)
-    f === :LastFrameAlive && return Ptr{Cint}(x + 160)
-    f === :LastFrameActive && return Ptr{Cint}(x + 164)
-    f === :LastFrameFocused && return Ptr{Cint}(x + 168)
-    f === :LastFocusedNodeId && return Ptr{ImGuiID}(x + 172)
-    f === :SelectedTabId && return Ptr{ImGuiID}(x + 176)
-    f === :WantCloseTabId && return Ptr{ImGuiID}(x + 180)
-    f === :AuthorityForPos && return (Ptr{ImGuiDataAuthority}(x + 184), 0, 3)
-    f === :AuthorityForSize && return (Ptr{ImGuiDataAuthority}(x + 184), 3, 3)
-    f === :AuthorityForViewport && return (Ptr{ImGuiDataAuthority}(x + 184), 6, 3)
-    f === :IsVisible && return (Ptr{Bool}(x + 184), 9, 1)
-    f === :IsFocused && return (Ptr{Bool}(x + 184), 10, 1)
-    f === :HasCloseButton && return (Ptr{Bool}(x + 184), 11, 1)
-    f === :HasWindowMenuButton && return (Ptr{Bool}(x + 184), 12, 1)
-    f === :WantCloseAll && return (Ptr{Bool}(x + 184), 13, 1)
-    f === :WantLockSizeOnce && return (Ptr{Bool}(x + 184), 14, 1)
-    f === :WantMouseMove && return (Ptr{Bool}(x + 184), 15, 1)
-    f === :WantHiddenTabBarUpdate && return (Ptr{Bool}(x + 184), 16, 1)
-    f === :WantHiddenTabBarToggle && return (Ptr{Bool}(x + 184), 17, 1)
-    f === :MarkedForPosSizeWrite && return (Ptr{Bool}(x + 184), 18, 1)
-    return getfield(x, f)
-end
-
-function Base.getproperty(x::ImGuiDockNode, f::Symbol)
-    r = Ref{ImGuiDockNode}(x)
-    ptr = Base.unsafe_convert(Ptr{ImGuiDockNode}, r)
-    fptr = getproperty(ptr, f)
-    begin
-        if fptr isa Ptr
-            return GC.@preserve(r, unsafe_load(fptr))
-        else
-            (baseptr, offset, width) = fptr
-            ty = eltype(baseptr)
-            baseptr32 = convert(Ptr{UInt32}, baseptr)
-            u64 = GC.@preserve(r, unsafe_load(baseptr32))
-            if offset + width > 32
-                u64 |= GC.@preserve(r, unsafe_load(baseptr32 + 4)) << 32
-            end
-            u64 = u64 >> offset & (1 << width - 1)
-            return u64 % ty
-        end
-    end
-end
-
-function Base.setproperty!(x::Ptr{ImGuiDockNode}, f::Symbol, v)
-    fptr = getproperty(x, f)
-    if fptr isa Ptr
-        unsafe_store!(getproperty(x, f), v)
-    else
-        (baseptr, offset, width) = fptr
-        baseptr32 = convert(Ptr{UInt32}, baseptr)
-        u64 = unsafe_load(baseptr32)
-        straddle = offset + width > 32
-        if straddle
-            u64 |= unsafe_load(baseptr32 + 4) << 32
-        end
-        mask = 1 << width - 1
-        u64 &= ~(mask << offset)
-        u64 |= (unsigned(v) & mask) << offset
-        unsafe_store!(baseptr32, u64 & typemax(UInt32))
-        if straddle
-            unsafe_store!(baseptr32 + 4, u64 >> 32)
-        end
-    end
-end
 
 mutable struct ImGuiDockRequest end
 
@@ -1579,22 +1827,6 @@ end
 
 struct ImBitVector
     Storage::ImVector_ImU32
-end
-
-struct ImFontAtlasCustomRect
-    Width::Cushort
-    Height::Cushort
-    X::Cushort
-    Y::Cushort
-    GlyphID::Cuint
-    GlyphAdvanceX::Cfloat
-    GlyphOffset::ImVec2
-    Font::Ptr{Cvoid} # Font::Ptr{ImFont}
-end
-
-function Base.getproperty(x::ImFontAtlasCustomRect, f::Symbol)
-    f === :Font && return Ptr{ImFont}(getfield(x, f))
-    return getfield(x, f)
 end
 
 struct ImGuiTextRange
@@ -1866,229 +2098,6 @@ const ImGuiConfigFlags = Cint
 
 const ImGuiBackendFlags = Cint
 
-const ImFontAtlasFlags = Cint
-
-struct ImVector_ImFontPtr
-    Size::Cint
-    Capacity::Cint
-    Data::Ptr{Ptr{Cvoid}} # Data::Ptr{Ptr{ImFont}}
-end
-
-function Base.getproperty(x::ImVector_ImFontPtr, f::Symbol)
-    f === :Data && return Ptr{Ptr{ImFont}}(getfield(x, f))
-    return getfield(x, f)
-end
-
-struct ImVector_ImFontAtlasCustomRect
-    Size::Cint
-    Capacity::Cint
-    Data::Ptr{ImFontAtlasCustomRect}
-end
-
-struct ImFontConfig
-    FontData::Ptr{Cvoid}
-    FontDataSize::Cint
-    FontDataOwnedByAtlas::Bool
-    FontNo::Cint
-    SizePixels::Cfloat
-    OversampleH::Cint
-    OversampleV::Cint
-    PixelSnapH::Bool
-    GlyphExtraSpacing::ImVec2
-    GlyphOffset::ImVec2
-    GlyphRanges::Ptr{ImWchar}
-    GlyphMinAdvanceX::Cfloat
-    GlyphMaxAdvanceX::Cfloat
-    MergeMode::Bool
-    FontBuilderFlags::Cuint
-    RasterizerMultiply::Cfloat
-    EllipsisChar::ImWchar
-    Name::NTuple{40, Cchar}
-    DstFont::Ptr{Cvoid} # DstFont::Ptr{ImFont}
-end
-
-function Base.getproperty(x::ImFontConfig, f::Symbol)
-    f === :DstFont && return Ptr{ImFont}(getfield(x, f))
-    return getfield(x, f)
-end
-
-function Base.getproperty(x::Ptr{ImFontConfig}, f::Symbol)
-    f === :FontData && return Ptr{Ptr{Cvoid}}(x + 0)
-    f === :FontDataSize && return Ptr{Cint}(x + 8)
-    f === :FontDataOwnedByAtlas && return Ptr{Bool}(x + 12)
-    f === :FontNo && return Ptr{Cint}(x + 16)
-    f === :SizePixels && return Ptr{Cfloat}(x + 20)
-    f === :OversampleH && return Ptr{Cint}(x + 24)
-    f === :OversampleV && return Ptr{Cint}(x + 28)
-    f === :PixelSnapH && return Ptr{Bool}(x + 32)
-    f === :GlyphExtraSpacing && return Ptr{ImVec2}(x + 36)
-    f === :GlyphOffset && return Ptr{ImVec2}(x + 44)
-    f === :GlyphRanges && return Ptr{Ptr{ImWchar}}(x + 56)
-    f === :GlyphMinAdvanceX && return Ptr{Cfloat}(x + 64)
-    f === :GlyphMaxAdvanceX && return Ptr{Cfloat}(x + 68)
-    f === :MergeMode && return Ptr{Bool}(x + 72)
-    f === :FontBuilderFlags && return Ptr{Cuint}(x + 76)
-    f === :RasterizerMultiply && return Ptr{Cfloat}(x + 80)
-    f === :EllipsisChar && return Ptr{ImWchar}(x + 84)
-    f === :Name && return Ptr{NTuple{40, Cchar}}(x + 86)
-    f === :DstFont && return Ptr{Ptr{ImFont}}(x + 128)
-    return getfield(x, f)
-end
-
-function Base.setproperty!(x::Ptr{ImFontConfig}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
-end
-
-struct ImVector_ImFontConfig
-    Size::Cint
-    Capacity::Cint
-    Data::Ptr{ImFontConfig}
-end
-
-struct ImFontBuilderIO
-    FontBuilder_Build::Ptr{Cvoid}
-end
-
-struct ImFontAtlas
-    Flags::ImFontAtlasFlags
-    TexID::ImTextureID
-    TexDesiredWidth::Cint
-    TexGlyphPadding::Cint
-    Locked::Bool
-    TexPixelsUseColors::Bool
-    TexPixelsAlpha8::Ptr{Cuchar}
-    TexPixelsRGBA32::Ptr{Cuint}
-    TexWidth::Cint
-    TexHeight::Cint
-    TexUvScale::ImVec2
-    TexUvWhitePixel::ImVec2
-    Fonts::ImVector_ImFontPtr
-    CustomRects::ImVector_ImFontAtlasCustomRect
-    ConfigData::ImVector_ImFontConfig
-    TexUvLines::NTuple{64, ImVec4}
-    FontBuilderIO::Ptr{ImFontBuilderIO}
-    FontBuilderFlags::Cuint
-    PackIdMouseCursors::Cint
-    PackIdLines::Cint
-end
-function Base.getproperty(x::Ptr{ImFontAtlas}, f::Symbol)
-    f === :Flags && return Ptr{ImFontAtlasFlags}(x + 0)
-    f === :TexID && return Ptr{ImTextureID}(x + 8)
-    f === :TexDesiredWidth && return Ptr{Cint}(x + 16)
-    f === :TexGlyphPadding && return Ptr{Cint}(x + 20)
-    f === :Locked && return Ptr{Bool}(x + 24)
-    f === :TexPixelsUseColors && return Ptr{Bool}(x + 25)
-    f === :TexPixelsAlpha8 && return Ptr{Ptr{Cuchar}}(x + 32)
-    f === :TexPixelsRGBA32 && return Ptr{Ptr{Cuint}}(x + 40)
-    f === :TexWidth && return Ptr{Cint}(x + 48)
-    f === :TexHeight && return Ptr{Cint}(x + 52)
-    f === :TexUvScale && return Ptr{ImVec2}(x + 56)
-    f === :TexUvWhitePixel && return Ptr{ImVec2}(x + 64)
-    f === :Fonts && return Ptr{ImVector_ImFontPtr}(x + 72)
-    f === :CustomRects && return Ptr{ImVector_ImFontAtlasCustomRect}(x + 88)
-    f === :ConfigData && return Ptr{ImVector_ImFontConfig}(x + 104)
-    f === :TexUvLines && return Ptr{NTuple{64, ImVec4}}(x + 120)
-    f === :FontBuilderIO && return Ptr{Ptr{ImFontBuilderIO}}(x + 1144)
-    f === :FontBuilderFlags && return Ptr{Cuint}(x + 1152)
-    f === :PackIdMouseCursors && return Ptr{Cint}(x + 1156)
-    f === :PackIdLines && return Ptr{Cint}(x + 1160)
-    return getfield(x, f)
-end
-
-function Base.setproperty!(x::Ptr{ImFontAtlas}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
-end
-
-
-struct ImFontGlyph
-    data::NTuple{40, UInt8}
-end
-
-function Base.getproperty(x::Ptr{ImFontGlyph}, f::Symbol)
-    f === :Colored && return (Ptr{Cuint}(x + 0), 0, 1)
-    f === :Visible && return (Ptr{Cuint}(x + 0), 1, 1)
-    f === :Codepoint && return (Ptr{Cuint}(x + 0), 2, 30)
-    f === :AdvanceX && return Ptr{Cfloat}(x + 4)
-    f === :X0 && return Ptr{Cfloat}(x + 8)
-    f === :Y0 && return Ptr{Cfloat}(x + 12)
-    f === :X1 && return Ptr{Cfloat}(x + 16)
-    f === :Y1 && return Ptr{Cfloat}(x + 20)
-    f === :U0 && return Ptr{Cfloat}(x + 24)
-    f === :V0 && return Ptr{Cfloat}(x + 28)
-    f === :U1 && return Ptr{Cfloat}(x + 32)
-    f === :V1 && return Ptr{Cfloat}(x + 36)
-    return getfield(x, f)
-end
-
-function Base.getproperty(x::ImFontGlyph, f::Symbol)
-    r = Ref{ImFontGlyph}(x)
-    ptr = Base.unsafe_convert(Ptr{ImFontGlyph}, r)
-    fptr = getproperty(ptr, f)
-    begin
-        if fptr isa Ptr
-            return GC.@preserve(r, unsafe_load(fptr))
-        else
-            (baseptr, offset, width) = fptr
-            ty = eltype(baseptr)
-            baseptr32 = convert(Ptr{UInt32}, baseptr)
-            u64 = GC.@preserve(r, unsafe_load(baseptr32))
-            if offset + width > 32
-                u64 |= GC.@preserve(r, unsafe_load(baseptr32 + 4)) << 32
-            end
-            u64 = u64 >> offset & (1 << width - 1)
-            return u64 % ty
-        end
-    end
-end
-
-function Base.setproperty!(x::Ptr{ImFontGlyph}, f::Symbol, v)
-    fptr = getproperty(x, f)
-    if fptr isa Ptr
-        unsafe_store!(getproperty(x, f), v)
-    else
-        (baseptr, offset, width) = fptr
-        baseptr32 = convert(Ptr{UInt32}, baseptr)
-        u64 = unsafe_load(baseptr32)
-        straddle = offset + width > 32
-        if straddle
-            u64 |= unsafe_load(baseptr32 + 4) << 32
-        end
-        mask = 1 << width - 1
-        u64 &= ~(mask << offset)
-        u64 |= (unsigned(v) & mask) << offset
-        unsafe_store!(baseptr32, u64 & typemax(UInt32))
-        if straddle
-            unsafe_store!(baseptr32 + 4, u64 >> 32)
-        end
-    end
-end
-
-struct ImVector_ImFontGlyph
-    Size::Cint
-    Capacity::Cint
-    Data::Ptr{ImFontGlyph}
-end
-
-struct ImFont
-    IndexAdvanceX::ImVector_float
-    FallbackAdvanceX::Cfloat
-    FontSize::Cfloat
-    IndexLookup::ImVector_ImWchar
-    Glyphs::ImVector_ImFontGlyph
-    FallbackGlyph::Ptr{ImFontGlyph}
-    ContainerAtlas::Ptr{ImFontAtlas}
-    ConfigData::Ptr{ImFontConfig}
-    ConfigDataCount::Cshort
-    FallbackChar::ImWchar
-    EllipsisChar::ImWchar
-    DirtyLookupTables::Bool
-    Scale::Cfloat
-    Ascent::Cfloat
-    Descent::Cfloat
-    MetricsTotalSurface::Cint
-    Used4kPagesMap::NTuple{2, ImU8}
-end
-
 const ImGuiKeyModFlags = Cint
 
 struct ImGuiIO
@@ -2275,20 +2284,6 @@ function Base.setproperty!(x::Ptr{ImGuiIO}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
-
-struct ImDrawListSharedData
-    TexUvWhitePixel::ImVec2
-    Font::Ptr{ImFont}
-    FontSize::Cfloat
-    CurveTessellationTol::Cfloat
-    CircleSegmentMaxError::Cfloat
-    ClipRectFullscreen::ImVec4
-    InitialFlags::ImDrawListFlags
-    ArcFastVtx::NTuple{48, ImVec2}
-    ArcFastRadiusCutoff::Cfloat
-    CircleSegmentCounts::NTuple{64, ImU8}
-    TexUvLines::Ptr{ImVec4}
-end
 
 @cenum ImGuiInputSource::UInt32 begin
     ImGuiInputSource_None = 0

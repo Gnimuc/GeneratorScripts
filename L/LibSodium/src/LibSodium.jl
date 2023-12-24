@@ -9,18 +9,6 @@ const crypto_pwhash_argon2i_MEMLIMIT_MAX = ( ( SIZE_MAX >= 4398046510080 ) ? 439
 const crypto_pwhash_argon2id_MEMLIMIT_MAX = ( ( SIZE_MAX >= 4398046510080 ) ? 4398046510080 : ( SIZE_MAX >= Cuint(2147483648) ) ? Cuint(2147483648) : Cuint(32768) )
 
 
-function crypto_sign_edwards25519sha512batch(sm, smlen_p, m, mlen, sk)
-    ccall((:crypto_sign_edwards25519sha512batch, libsodium), Cint, (Ptr{Cuchar}, Ptr{Culonglong}, Ptr{Cuchar}, Culonglong, Ptr{Cuchar}), sm, smlen_p, m, mlen, sk)
-end
-
-function crypto_sign_edwards25519sha512batch_open(m, mlen_p, sm, smlen, pk)
-    ccall((:crypto_sign_edwards25519sha512batch_open, libsodium), Cint, (Ptr{Cuchar}, Ptr{Culonglong}, Ptr{Cuchar}, Culonglong, Ptr{Cuchar}), m, mlen_p, sm, smlen, pk)
-end
-
-function crypto_sign_edwards25519sha512batch_keypair(pk, sk)
-    ccall((:crypto_sign_edwards25519sha512batch_keypair, libsodium), Cint, (Ptr{Cuchar}, Ptr{Cuchar}), pk, sk)
-end
-
 function sodium_version_string()
     ccall((:sodium_version_string, libsodium), Ptr{Cchar}, ())
 end
@@ -2556,21 +2544,19 @@ function crypto_stream_salsa208_keygen(k)
     ccall((:crypto_stream_salsa208_keygen, libsodium), Cvoid, (Ptr{Cuchar},), k)
 end
 
-SODIUM_MIN(A, B) = if A < B
-        A
-    else
-        B
-    end
+function crypto_sign_edwards25519sha512batch(sm, smlen_p, m, mlen, sk)
+    ccall((:crypto_sign_edwards25519sha512batch, libsodium), Cint, (Ptr{Cuchar}, Ptr{Culonglong}, Ptr{Cuchar}, Culonglong, Ptr{Cuchar}), sm, smlen_p, m, mlen, sk)
+end
+
+function crypto_sign_edwards25519sha512batch_open(m, mlen_p, sm, smlen, pk)
+    ccall((:crypto_sign_edwards25519sha512batch_open, libsodium), Cint, (Ptr{Cuchar}, Ptr{Culonglong}, Ptr{Cuchar}, Culonglong, Ptr{Cuchar}), m, mlen_p, sm, smlen, pk)
+end
+
+function crypto_sign_edwards25519sha512batch_keypair(pk, sk)
+    ccall((:crypto_sign_edwards25519sha512batch_keypair, libsodium), Cint, (Ptr{Cuchar}, Ptr{Cuchar}), pk, sk)
+end
 
 const SODIUM_SIZE_MAX = SODIUM_MIN(UINT64_MAX, SIZE_MAX)
-
-const crypto_sign_edwards25519sha512batch_BYTES = Cuint(64)
-
-const crypto_sign_edwards25519sha512batch_PUBLICKEYBYTES = Cuint(32)
-
-const crypto_sign_edwards25519sha512batch_SECRETKEYBYTES = Cuint(32) + Cuint(32)
-
-const crypto_sign_edwards25519sha512batch_MESSAGEBYTES_MAX = SODIUM_SIZE_MAX - crypto_sign_edwards25519sha512batch_BYTES
 
 const SODIUM_VERSION_STRING = "1.0.18"
 
@@ -3163,6 +3149,14 @@ const crypto_stream_salsa208_KEYBYTES = Cuint(32)
 const crypto_stream_salsa208_NONCEBYTES = Cuint(8)
 
 const crypto_stream_salsa208_MESSAGEBYTES_MAX = SODIUM_SIZE_MAX
+
+const crypto_sign_edwards25519sha512batch_BYTES = Cuint(64)
+
+const crypto_sign_edwards25519sha512batch_PUBLICKEYBYTES = Cuint(32)
+
+const crypto_sign_edwards25519sha512batch_SECRETKEYBYTES = Cuint(32) + Cuint(32)
+
+const crypto_sign_edwards25519sha512batch_MESSAGEBYTES_MAX = SODIUM_SIZE_MAX - crypto_sign_edwards25519sha512batch_BYTES
 
 # FIXME: handle extern
 const randombytes_internal_implementation = randombytes_implementation

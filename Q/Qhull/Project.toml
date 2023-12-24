@@ -3,5 +3,5 @@ Clang = "40e3b903-d033-50b4-a0cc-940c62c95e31"
 Qhull_jll = "784f63db-0788-585a-bace-daefebcd302b"
 
 [compat]
-Clang = "0.14.0"
+Clang = "0.17"
 Qhull_jll = "v2020.2.0"

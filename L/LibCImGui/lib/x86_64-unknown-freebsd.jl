@@ -1,35 +1,21 @@
 using CEnum
 
-const __time64_t = Clonglong
+const __time_t = Int64
 
-const time_t = __time64_t
+const time_t = __time_t
 
 struct tm
-    data::NTuple{36, UInt8}
-end
-
-function Base.getproperty(x::Ptr{tm}, f::Symbol)
-    f === :tm_sec && return Ptr{Cint}(x + 0)
-    f === :tm_min && return Ptr{Cint}(x + 4)
-    f === :tm_hour && return Ptr{Cint}(x + 8)
-    f === :tm_mday && return Ptr{Cint}(x + 12)
-    f === :tm_mon && return Ptr{Cint}(x + 16)
-    f === :tm_year && return Ptr{Cint}(x + 20)
-    f === :tm_wday && return Ptr{Cint}(x + 24)
-    f === :tm_yday && return Ptr{Cint}(x + 28)
-    f === :tm_isdst && return Ptr{Cint}(x + 32)
-    return getfield(x, f)
-end
-
-function Base.getproperty(x::tm, f::Symbol)
-    r = Ref{tm}(x)
-    ptr = Base.unsafe_convert(Ptr{tm}, r)
-    fptr = getproperty(ptr, f)
-    GC.@preserve r unsafe_load(fptr)
-end
-
-function Base.setproperty!(x::Ptr{tm}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
+    tm_sec::Cint
+    tm_min::Cint
+    tm_hour::Cint
+    tm_mday::Cint
+    tm_mon::Cint
+    tm_year::Cint
+    tm_wday::Cint
+    tm_yday::Cint
+    tm_isdst::Cint
+    tm_gmtoff::Clong
+    tm_zone::Ptr{Cchar}
 end
 
 const ImGuiID = Cuint
@@ -953,16 +939,16 @@ function Base.getproperty(x::Ptr{ImGuiDockNode}, f::Symbol)
     f === :AuthorityForPos && return (Ptr{ImGuiDataAuthority}(x + 184), 0, 3)
     f === :AuthorityForSize && return (Ptr{ImGuiDataAuthority}(x + 184), 3, 3)
     f === :AuthorityForViewport && return (Ptr{ImGuiDataAuthority}(x + 184), 6, 3)
-    f === :IsVisible && return (Ptr{Bool}(x + 188), 0, 1)
-    f === :IsFocused && return (Ptr{Bool}(x + 188), 1, 1)
-    f === :HasCloseButton && return (Ptr{Bool}(x + 188), 2, 1)
-    f === :HasWindowMenuButton && return (Ptr{Bool}(x + 188), 3, 1)
-    f === :WantCloseAll && return (Ptr{Bool}(x + 188), 4, 1)
-    f === :WantLockSizeOnce && return (Ptr{Bool}(x + 188), 5, 1)
-    f === :WantMouseMove && return (Ptr{Bool}(x + 188), 6, 1)
-    f === :WantHiddenTabBarUpdate && return (Ptr{Bool}(x + 188), 7, 1)
-    f === :WantHiddenTabBarToggle && return (Ptr{Bool}(x + 188), 8, 1)
-    f === :MarkedForPosSizeWrite && return (Ptr{Bool}(x + 188), 9, 1)
+    f === :IsVisible && return (Ptr{Bool}(x + 184), 9, 1)
+    f === :IsFocused && return (Ptr{Bool}(x + 184), 10, 1)
+    f === :HasCloseButton && return (Ptr{Bool}(x + 184), 11, 1)
+    f === :HasWindowMenuButton && return (Ptr{Bool}(x + 184), 12, 1)
+    f === :WantCloseAll && return (Ptr{Bool}(x + 184), 13, 1)
+    f === :WantLockSizeOnce && return (Ptr{Bool}(x + 184), 14, 1)
+    f === :WantMouseMove && return (Ptr{Bool}(x + 184), 15, 1)
+    f === :WantHiddenTabBarUpdate && return (Ptr{Bool}(x + 184), 16, 1)
+    f === :WantHiddenTabBarToggle && return (Ptr{Bool}(x + 184), 17, 1)
+    f === :MarkedForPosSizeWrite && return (Ptr{Bool}(x + 184), 18, 1)
     return getfield(x, f)
 end
 

@@ -4,6 +4,6 @@ Clang = "40e3b903-d033-50b4-a0cc-940c62c95e31"
 assimp_jll = "54ae6823-98c6-5a7c-8365-5a43b909f91f"
 
 [compat]
-CEnum = "0.4.0"
-Clang = "0.14.0"
+CEnum = "0.4,0.5"
+Clang = "0.17"
 assimp_jll = "5.0.1"

@@ -3,5 +3,5 @@ Clang = "40e3b903-d033-50b4-a0cc-940c62c95e31"
 SCIP_jll = "e5ac4fe4-a920-5659-9bf8-f9f73e9e79ce"
 
 [compat]
-Clang = "0.14"
+Clang = "0.17"
 SCIP_jll = "^0.1.2"
