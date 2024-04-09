@@ -5,5 +5,5 @@ FreeType2_jll = "d7e528f0-a631-5988-bf34-fe36492bcfd7"
 
 [compat]
 CEnum = "0.4,0.5"
-Clang = "0.17"
+Clang = "0.18"
 FreeType2_jll = "v2.10.1"

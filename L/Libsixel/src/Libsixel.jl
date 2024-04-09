@@ -3,6 +3,8 @@ module LibSixel
 using libsixel_jll
 export libsixel_jll
 
+const sixel_index_t = Cuchar
+
 const SIXELSTATUS = Cint
 
 @enum characterSize::UInt32 begin
@@ -197,6 +199,10 @@ end
 
 function sixel_output_set_palette_type(output, palettetype)
     ccall((:sixel_output_set_palette_type, libsixel), Cvoid, (Ptr{sixel_output_t}, Cint), output, palettetype)
+end
+
+function sixel_output_set_ormode(output, ormode)
+    ccall((:sixel_output_set_ormode, libsixel), Cvoid, (Ptr{sixel_output_t}, Cint), output, ormode)
 end
 
 function sixel_output_set_encode_policy(output, encode_policy)
@@ -494,9 +500,15 @@ function sixel_decoder_decode(decoder)
     ccall((:sixel_decoder_decode, libsixel), SIXELSTATUS, (Ptr{sixel_decoder_t},), decoder)
 end
 
-const LIBSIXEL_VERSION = "1.8.1"
+const LIBSIXEL_VERSION = "1.10.3"
 
-const LIBSIXEL_ABI_VERSION = "1:6:0"
+const PACKAGE_VERSION = LIBSIXEL_VERSION
+
+const LIBSIXEL_ABI_VERSION = "@LS_LT_CURRENT@:@LS_LT_REVISION@:@LS_LT_AGE@"
+
+const LS_LTVERSION = LIBSIXEL_ABI_VERSION
+
+const PACKAGE_DESCRIPTION = "A lightweight, fast C implementation of DEC SIXEL graphics codec"
 
 const SIXEL_OUTPUT_PACKET_SIZE = 16384
 
@@ -505,6 +517,14 @@ const SIXEL_PALETTE_MIN = 2
 const SIXEL_PALETTE_MAX = 256
 
 const SIXEL_USE_DEPRECATED_SYMBOLS = 1
+
+const SIXEL_ALLOCATE_BYTES_MAX = Culong(10248) * Culong(1024) * Culong(128)
+
+const SIXEL_WIDTH_LIMIT = 1000000
+
+const SIXEL_HEIGHT_LIMIT = 1000000
+
+const SIXEL_DEFALUT_GIF_DELAY = 1
 
 const SIXEL_OK = 0x0000
 
@@ -539,6 +559,8 @@ const SIXEL_BAD_ALLOCATION = SIXEL_RUNTIME_ERROR | 0x0001
 const SIXEL_BAD_ARGUMENT = SIXEL_RUNTIME_ERROR | 0x0002
 
 const SIXEL_BAD_INPUT = SIXEL_RUNTIME_ERROR | 0x0003
+
+const SIXEL_BAD_INTEGER_OVERFLOW = SIXEL_RUNTIME_ERROR | 0x0004
 
 const SIXEL_NOT_IMPLEMENTED = SIXEL_FEATURE_ERROR | 0x0001
 
@@ -769,6 +791,8 @@ const SIXEL_OPTFLAG_PALETTE_TYPE = Cchar('t')
 const SIXEL_OPTFLAG_BUILTIN_PALETTE = Cchar('b')
 
 const SIXEL_OPTFLAG_ENCODE_POLICY = Cchar('E')
+
+const SIXEL_OPTFLAG_ORMODE = Cchar('O')
 
 const SIXEL_OPTFLAG_BGCOLOR = Cchar('B')
 

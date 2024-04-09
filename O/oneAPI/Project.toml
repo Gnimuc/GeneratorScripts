@@ -4,4 +4,4 @@ JuliaFormatter = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
 oneAPI_Level_Zero_Headers_jll = "f4bc562b-d309-54f8-9efb-476e56f0410d"
 
 [compat]
-Clang = "0.17"
+Clang = "0.18"

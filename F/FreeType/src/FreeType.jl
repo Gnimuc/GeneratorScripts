@@ -19,13 +19,59 @@ const LONG_MIN = typemin(Clong)
 const ULONG_MAX = typemax(Culong)
 
 
-const FT_Int16 = Cshort
+# typedef int ( * FT_Outline_MoveToFunc ) ( const FT_Vector * to , void * user )
+const FT_Outline_MoveToFunc = Ptr{Cvoid}
 
-const FT_UInt16 = Cushort
+# typedef int ( * FT_Outline_LineToFunc ) ( const FT_Vector * to , void * user )
+const FT_Outline_LineToFunc = Ptr{Cvoid}
+
+# typedef int ( * FT_Outline_ConicToFunc ) ( const FT_Vector * control , const FT_Vector * to , void * user )
+const FT_Outline_ConicToFunc = Ptr{Cvoid}
+
+# typedef int ( * FT_Outline_CubicToFunc ) ( const FT_Vector * control1 , const FT_Vector * control2 , const FT_Vector * to , void * user )
+const FT_Outline_CubicToFunc = Ptr{Cvoid}
+
+# typedef void ( * FT_SpanFunc ) ( int y , int count , const FT_Span * spans , void * user )
+const FT_SpanFunc = Ptr{Cvoid}
+
+# typedef int ( * FT_Raster_NewFunc ) ( void * memory , FT_Raster * raster )
+const FT_Raster_NewFunc = Ptr{Cvoid}
+
+# typedef void ( * FT_Raster_DoneFunc ) ( FT_Raster raster )
+const FT_Raster_DoneFunc = Ptr{Cvoid}
+
+# typedef void ( * FT_Raster_ResetFunc ) ( FT_Raster raster , unsigned char * pool_base , unsigned long pool_size )
+const FT_Raster_ResetFunc = Ptr{Cvoid}
+
+# typedef int ( * FT_Raster_SetModeFunc ) ( FT_Raster raster , unsigned long mode , void * args )
+const FT_Raster_SetModeFunc = Ptr{Cvoid}
+
+# typedef int ( * FT_Raster_RenderFunc ) ( FT_Raster raster , const FT_Raster_Params * params )
+const FT_Raster_RenderFunc = Ptr{Cvoid}
+
+const FT_UInt32 = Cuint
+
+const FT_Tag = FT_UInt32
+
+const FT_Bool = Cuchar
 
 const FT_Int32 = Cint
 
-const FT_UInt32 = Cuint
+@cenum FT_Render_Mode_::UInt32 begin
+    FT_RENDER_MODE_NORMAL = 0
+    FT_RENDER_MODE_LIGHT = 1
+    FT_RENDER_MODE_MONO = 2
+    FT_RENDER_MODE_LCD = 3
+    FT_RENDER_MODE_LCD_V = 4
+    FT_RENDER_MODE_SDF = 5
+    FT_RENDER_MODE_MAX = 6
+end
+
+const FT_Render_Mode = FT_Render_Mode_
+
+const FT_Int16 = Cshort
+
+const FT_UInt16 = Cushort
 
 const FT_Fast = Cint
 
@@ -155,18 +201,6 @@ end
 
 const FT_Outline = FT_Outline_
 
-# typedef int ( * FT_Outline_MoveToFunc ) ( const FT_Vector * to , void * user )
-const FT_Outline_MoveToFunc = Ptr{Cvoid}
-
-# typedef int ( * FT_Outline_LineToFunc ) ( const FT_Vector * to , void * user )
-const FT_Outline_LineToFunc = Ptr{Cvoid}
-
-# typedef int ( * FT_Outline_ConicToFunc ) ( const FT_Vector * control , const FT_Vector * to , void * user )
-const FT_Outline_ConicToFunc = Ptr{Cvoid}
-
-# typedef int ( * FT_Outline_CubicToFunc ) ( const FT_Vector * control1 , const FT_Vector * control2 , const FT_Vector * to , void * user )
-const FT_Outline_CubicToFunc = Ptr{Cvoid}
-
 struct FT_Outline_Funcs_
     move_to::FT_Outline_MoveToFunc
     line_to::FT_Outline_LineToFunc
@@ -184,13 +218,10 @@ const FT_Outline_Funcs = FT_Outline_Funcs_
     FT_GLYPH_FORMAT_BITMAP = 1651078259
     FT_GLYPH_FORMAT_OUTLINE = 1869968492
     FT_GLYPH_FORMAT_PLOTTER = 1886154612
+    FT_GLYPH_FORMAT_SVG = 1398163232
 end
 
 const FT_Glyph_Format = FT_Glyph_Format_
-
-mutable struct FT_RasterRec_ end
-
-const FT_Raster = Ptr{FT_RasterRec_}
 
 struct FT_Span_
     x::Cshort
@@ -199,9 +230,6 @@ struct FT_Span_
 end
 
 const FT_Span = FT_Span_
-
-# typedef void ( * FT_SpanFunc ) ( int y , int count , const FT_Span * spans , void * user )
-const FT_SpanFunc = Ptr{Cvoid}
 
 # typedef int ( * FT_Raster_BitTest_Func ) ( int y , int x , void * user )
 const FT_Raster_BitTest_Func = Ptr{Cvoid}
@@ -223,20 +251,9 @@ end
 
 const FT_Raster_Params = FT_Raster_Params_
 
-# typedef int ( * FT_Raster_NewFunc ) ( void * memory , FT_Raster * raster )
-const FT_Raster_NewFunc = Ptr{Cvoid}
+mutable struct FT_RasterRec_ end
 
-# typedef void ( * FT_Raster_DoneFunc ) ( FT_Raster raster )
-const FT_Raster_DoneFunc = Ptr{Cvoid}
-
-# typedef void ( * FT_Raster_ResetFunc ) ( FT_Raster raster , unsigned char * pool_base , unsigned long pool_size )
-const FT_Raster_ResetFunc = Ptr{Cvoid}
-
-# typedef int ( * FT_Raster_SetModeFunc ) ( FT_Raster raster , unsigned long mode , void * args )
-const FT_Raster_SetModeFunc = Ptr{Cvoid}
-
-# typedef int ( * FT_Raster_RenderFunc ) ( FT_Raster raster , const FT_Raster_Params * params )
-const FT_Raster_RenderFunc = Ptr{Cvoid}
+const FT_Raster = Ptr{FT_RasterRec_}
 
 struct FT_Raster_Funcs_
     glyph_format::FT_Glyph_Format
@@ -249,8 +266,6 @@ end
 
 const FT_Raster_Funcs = FT_Raster_Funcs_
 
-const FT_Bool = Cuchar
-
 const FT_FWord = Cshort
 
 const FT_UFWord = Cushort
@@ -260,8 +275,6 @@ const FT_Char = Int8
 const FT_Byte = Cuchar
 
 const FT_Bytes = Ptr{FT_Byte}
-
-const FT_Tag = FT_UInt32
 
 const FT_String = Cchar
 
@@ -309,7 +322,7 @@ const FT_Matrix = FT_Matrix_
 
 struct FT_Data_
     pointer::Ptr{FT_Byte}
-    length::FT_Int
+    length::FT_UInt
 end
 
 const FT_Data = FT_Data_
@@ -353,12 +366,16 @@ struct FT_ListNodeRec_
     next::FT_ListNode
     data::Ptr{Cvoid}
 end
+Base.unsafe_convert(::Type{Ptr{__JL_FT_ListNodeRec_}}, x::Base.RefValue{FT_ListNodeRec_}) = Base.unsafe_convert(Ptr{__JL_FT_ListNodeRec_}, Base.unsafe_convert(Ptr{FT_ListNodeRec_}, x))
+
+Base.unsafe_convert(::Type{Ptr{__JL_FT_ListNodeRec_}}, x::Ptr{FT_ListNodeRec_}) = Ptr{__JL_FT_ListNodeRec_}(x)
+
 
 const FT_ListNodeRec = FT_ListNodeRec_
 
 const FT_ListRec = FT_ListRec_
 
-@cenum __JL_Ctag_7::UInt32 begin
+@cenum var"enum (unnamed at /Users/gnimuc/.julia/artifacts/c65e07e3da4f1bf519bc432389dbbd61df320457/include/freetype2/freetype/ftmoderr.h:147:3)"::UInt32 begin
     FT_Mod_Err_Base = 0
     FT_Mod_Err_Autofit = 0
     FT_Mod_Err_BDF = 0
@@ -382,10 +399,11 @@ const FT_ListRec = FT_ListRec_
     FT_Mod_Err_Type42 = 0
     FT_Mod_Err_Winfonts = 0
     FT_Mod_Err_GXvalid = 0
+    FT_Mod_Err_Sdf = 0
     FT_Mod_Err_Max = 1
 end
 
-@cenum __JL_Ctag_8::UInt32 begin
+@cenum var"enum (unnamed at /Users/gnimuc/.julia/artifacts/c65e07e3da4f1bf519bc432389dbbd61df320457/include/freetype2/freetype/fterrors.h:195:3)"::UInt32 begin
     FT_Err_Ok = 0
     FT_Err_Cannot_Open_Resource = 1
     FT_Err_Unknown_File_Format = 2
@@ -407,6 +425,7 @@ end
     FT_Err_Invalid_Composite = 21
     FT_Err_Too_Many_Hints = 22
     FT_Err_Invalid_Pixel_Size = 23
+    FT_Err_Invalid_SVG_Document = 24
     FT_Err_Invalid_Handle = 32
     FT_Err_Invalid_Library_Handle = 33
     FT_Err_Invalid_Driver_Handle = 34
@@ -463,6 +482,7 @@ end
     FT_Err_Invalid_Post_Table = 155
     FT_Err_DEF_In_Glyf_Bytecode = 156
     FT_Err_Missing_Bitmap = 157
+    FT_Err_Missing_SVG_Hooks = 158
     FT_Err_Syntax_Error = 160
     FT_Err_Stack_Underflow = 161
     FT_Err_Ignore = 162
@@ -525,48 +545,22 @@ mutable struct FT_RendererRec_ end
 
 const FT_Renderer = Ptr{FT_RendererRec_}
 
-mutable struct __JL_FT_FaceRec_
+mutable struct __JL_FT_CharMapRec_
 end
 
-function Base.unsafe_load(x::Ptr{__JL_FT_FaceRec_})
-    unsafe_load(Ptr{FT_FaceRec_}(x))
+function Base.unsafe_load(x::Ptr{__JL_FT_CharMapRec_})
+    unsafe_load(Ptr{FT_CharMapRec_}(x))
 end
 
-function Base.getproperty(x::Ptr{__JL_FT_FaceRec_}, f::Symbol)
-    getproperty(Ptr{FT_FaceRec_}(x), f)
+function Base.getproperty(x::Ptr{__JL_FT_CharMapRec_}, f::Symbol)
+    getproperty(Ptr{FT_CharMapRec_}(x), f)
 end
 
-function Base.setproperty!(x::Ptr{__JL_FT_FaceRec_}, f::Symbol, v)
-    setproperty!(Ptr{FT_FaceRec_}(x), f, v)
+function Base.setproperty!(x::Ptr{__JL_FT_CharMapRec_}, f::Symbol, v)
+    setproperty!(Ptr{FT_CharMapRec_}(x), f, v)
 end
 
-const FT_Face = Ptr{__JL_FT_FaceRec_}
-
-struct FT_Size_Metrics_
-    x_ppem::FT_UShort
-    y_ppem::FT_UShort
-    x_scale::FT_Fixed
-    y_scale::FT_Fixed
-    ascender::FT_Pos
-    descender::FT_Pos
-    height::FT_Pos
-    max_advance::FT_Pos
-end
-
-const FT_Size_Metrics = FT_Size_Metrics_
-
-mutable struct FT_Size_InternalRec_ end
-
-const FT_Size_Internal = Ptr{FT_Size_InternalRec_}
-
-struct FT_SizeRec_
-    face::FT_Face
-    generic::FT_Generic
-    metrics::FT_Size_Metrics
-    internal::FT_Size_Internal
-end
-
-const FT_Size = Ptr{FT_SizeRec_}
+const FT_CharMap = Ptr{__JL_FT_CharMapRec_}
 
 mutable struct __JL_FT_GlyphSlotRec_
 end
@@ -585,56 +579,22 @@ end
 
 const FT_GlyphSlot = Ptr{__JL_FT_GlyphSlotRec_}
 
-mutable struct __JL_FT_CharMapRec_
+mutable struct __JL_FT_SizeRec_
 end
 
-function Base.unsafe_load(x::Ptr{__JL_FT_CharMapRec_})
-    unsafe_load(Ptr{FT_CharMapRec_}(x))
+function Base.unsafe_load(x::Ptr{__JL_FT_SizeRec_})
+    unsafe_load(Ptr{FT_SizeRec_}(x))
 end
 
-function Base.getproperty(x::Ptr{__JL_FT_CharMapRec_}, f::Symbol)
-    getproperty(Ptr{FT_CharMapRec_}(x), f)
+function Base.getproperty(x::Ptr{__JL_FT_SizeRec_}, f::Symbol)
+    getproperty(Ptr{FT_SizeRec_}(x), f)
 end
 
-function Base.setproperty!(x::Ptr{__JL_FT_CharMapRec_}, f::Symbol, v)
-    setproperty!(Ptr{FT_CharMapRec_}(x), f, v)
+function Base.setproperty!(x::Ptr{__JL_FT_SizeRec_}, f::Symbol, v)
+    setproperty!(Ptr{FT_SizeRec_}(x), f, v)
 end
 
-const FT_CharMap = Ptr{__JL_FT_CharMapRec_}
-
-@cenum FT_Encoding_::UInt32 begin
-    FT_ENCODING_NONE = 0
-    FT_ENCODING_MS_SYMBOL = 1937337698
-    FT_ENCODING_UNICODE = 1970170211
-    FT_ENCODING_SJIS = 1936353651
-    FT_ENCODING_PRC = 1734484000
-    FT_ENCODING_BIG5 = 1651074869
-    FT_ENCODING_WANSUNG = 2002873971
-    FT_ENCODING_JOHAB = 1785686113
-    FT_ENCODING_GB2312 = 1734484000
-    FT_ENCODING_MS_SJIS = 1936353651
-    FT_ENCODING_MS_GB2312 = 1734484000
-    FT_ENCODING_MS_BIG5 = 1651074869
-    FT_ENCODING_MS_WANSUNG = 2002873971
-    FT_ENCODING_MS_JOHAB = 1785686113
-    FT_ENCODING_ADOBE_STANDARD = 1094995778
-    FT_ENCODING_ADOBE_EXPERT = 1094992453
-    FT_ENCODING_ADOBE_CUSTOM = 1094992451
-    FT_ENCODING_ADOBE_LATIN_1 = 1818326065
-    FT_ENCODING_OLD_LATIN_2 = 1818326066
-    FT_ENCODING_APPLE_ROMAN = 1634889070
-end
-
-const FT_Encoding = FT_Encoding_
-
-struct FT_CharMapRec_
-    face::FT_Face
-    encoding::FT_Encoding
-    platform_id::FT_UShort
-    encoding_id::FT_UShort
-end
-
-const FT_CharMapRec = FT_CharMapRec_
+const FT_Size = Ptr{__JL_FT_SizeRec_}
 
 mutable struct FT_Face_InternalRec_ end
 
@@ -674,7 +634,75 @@ struct FT_FaceRec_
     internal::FT_Face_Internal
 end
 
+const FT_Face = Ptr{FT_FaceRec_}
+
+@cenum FT_Encoding_::UInt32 begin
+    FT_ENCODING_NONE = 0
+    FT_ENCODING_MS_SYMBOL = 1937337698
+    FT_ENCODING_UNICODE = 1970170211
+    FT_ENCODING_SJIS = 1936353651
+    FT_ENCODING_PRC = 1734484000
+    FT_ENCODING_BIG5 = 1651074869
+    FT_ENCODING_WANSUNG = 2002873971
+    FT_ENCODING_JOHAB = 1785686113
+    FT_ENCODING_GB2312 = 1734484000
+    FT_ENCODING_MS_SJIS = 1936353651
+    FT_ENCODING_MS_GB2312 = 1734484000
+    FT_ENCODING_MS_BIG5 = 1651074869
+    FT_ENCODING_MS_WANSUNG = 2002873971
+    FT_ENCODING_MS_JOHAB = 1785686113
+    FT_ENCODING_ADOBE_STANDARD = 1094995778
+    FT_ENCODING_ADOBE_EXPERT = 1094992453
+    FT_ENCODING_ADOBE_CUSTOM = 1094992451
+    FT_ENCODING_ADOBE_LATIN_1 = 1818326065
+    FT_ENCODING_OLD_LATIN_2 = 1818326066
+    FT_ENCODING_APPLE_ROMAN = 1634889070
+end
+
+const FT_Encoding = FT_Encoding_
+
+struct FT_CharMapRec_
+    face::FT_Face
+    encoding::FT_Encoding
+    platform_id::FT_UShort
+    encoding_id::FT_UShort
+end
+Base.unsafe_convert(::Type{Ptr{__JL_FT_CharMapRec_}}, x::Base.RefValue{FT_CharMapRec_}) = Base.unsafe_convert(Ptr{__JL_FT_CharMapRec_}, Base.unsafe_convert(Ptr{FT_CharMapRec_}, x))
+
+Base.unsafe_convert(::Type{Ptr{__JL_FT_CharMapRec_}}, x::Ptr{FT_CharMapRec_}) = Ptr{__JL_FT_CharMapRec_}(x)
+
+
+const FT_CharMapRec = FT_CharMapRec_
+
 const FT_FaceRec = FT_FaceRec_
+
+mutable struct FT_Size_InternalRec_ end
+
+const FT_Size_Internal = Ptr{FT_Size_InternalRec_}
+
+struct FT_Size_Metrics_
+    x_ppem::FT_UShort
+    y_ppem::FT_UShort
+    x_scale::FT_Fixed
+    y_scale::FT_Fixed
+    ascender::FT_Pos
+    descender::FT_Pos
+    height::FT_Pos
+    max_advance::FT_Pos
+end
+
+const FT_Size_Metrics = FT_Size_Metrics_
+
+struct FT_SizeRec_
+    face::FT_Face
+    generic::FT_Generic
+    metrics::FT_Size_Metrics
+    internal::FT_Size_Internal
+end
+Base.unsafe_convert(::Type{Ptr{__JL_FT_SizeRec_}}, x::Base.RefValue{FT_SizeRec_}) = Base.unsafe_convert(Ptr{__JL_FT_SizeRec_}, Base.unsafe_convert(Ptr{FT_SizeRec_}, x))
+
+Base.unsafe_convert(::Type{Ptr{__JL_FT_SizeRec_}}, x::Ptr{FT_SizeRec_}) = Ptr{__JL_FT_SizeRec_}(x)
+
 
 const FT_SizeRec = FT_SizeRec_
 
@@ -710,6 +738,10 @@ struct FT_GlyphSlotRec_
     other::Ptr{Cvoid}
     internal::FT_Slot_Internal
 end
+Base.unsafe_convert(::Type{Ptr{__JL_FT_GlyphSlotRec_}}, x::Base.RefValue{FT_GlyphSlotRec_}) = Base.unsafe_convert(Ptr{__JL_FT_GlyphSlotRec_}, Base.unsafe_convert(Ptr{FT_GlyphSlotRec_}, x))
+
+Base.unsafe_convert(::Type{Ptr{__JL_FT_GlyphSlotRec_}}, x::Ptr{FT_GlyphSlotRec_}) = Ptr{__JL_FT_GlyphSlotRec_}(x)
+
 
 const FT_GlyphSlotRec = FT_GlyphSlotRec_
 
@@ -820,16 +852,9 @@ function FT_Set_Transform(face, matrix, delta)
     ccall((:FT_Set_Transform, libfreetype), Cvoid, (FT_Face, Ptr{FT_Matrix}, Ptr{FT_Vector}), face, matrix, delta)
 end
 
-@cenum FT_Render_Mode_::UInt32 begin
-    FT_RENDER_MODE_NORMAL = 0
-    FT_RENDER_MODE_LIGHT = 1
-    FT_RENDER_MODE_MONO = 2
-    FT_RENDER_MODE_LCD = 3
-    FT_RENDER_MODE_LCD_V = 4
-    FT_RENDER_MODE_MAX = 5
+function FT_Get_Transform(face, matrix, delta)
+    ccall((:FT_Get_Transform, libfreetype), Cvoid, (FT_Face, Ptr{FT_Matrix}, Ptr{FT_Vector}), face, matrix, delta)
 end
-
-const FT_Render_Mode = FT_Render_Mode_
 
 function FT_Render_Glyph(slot, render_mode)
     ccall((:FT_Render_Glyph, libfreetype), FT_Error, (FT_GlyphSlot, FT_Render_Mode), slot, render_mode)
@@ -849,14 +874,6 @@ end
 
 function FT_Get_Track_Kerning(face, point_size, degree, akerning)
     ccall((:FT_Get_Track_Kerning, libfreetype), FT_Error, (FT_Face, FT_Fixed, FT_Int, Ptr{FT_Fixed}), face, point_size, degree, akerning)
-end
-
-function FT_Get_Glyph_Name(face, glyph_index, buffer, buffer_max)
-    ccall((:FT_Get_Glyph_Name, libfreetype), FT_Error, (FT_Face, FT_UInt, FT_Pointer, FT_UInt), face, glyph_index, buffer, buffer_max)
-end
-
-function FT_Get_Postscript_Name(face)
-    ccall((:FT_Get_Postscript_Name, libfreetype), Ptr{Cchar}, (FT_Face,), face)
 end
 
 function FT_Select_Charmap(face, encoding)
@@ -891,20 +908,16 @@ function FT_Get_Name_Index(face, glyph_name)
     ccall((:FT_Get_Name_Index, libfreetype), FT_UInt, (FT_Face, Ptr{FT_String}), face, glyph_name)
 end
 
+function FT_Get_Glyph_Name(face, glyph_index, buffer, buffer_max)
+    ccall((:FT_Get_Glyph_Name, libfreetype), FT_Error, (FT_Face, FT_UInt, FT_Pointer, FT_UInt), face, glyph_index, buffer, buffer_max)
+end
+
+function FT_Get_Postscript_Name(face)
+    ccall((:FT_Get_Postscript_Name, libfreetype), Ptr{Cchar}, (FT_Face,), face)
+end
+
 function FT_Get_SubGlyph_Info(glyph, sub_index, p_index, p_flags, p_arg1, p_arg2, p_transform)
     ccall((:FT_Get_SubGlyph_Info, libfreetype), FT_Error, (FT_GlyphSlot, FT_UInt, Ptr{FT_Int}, Ptr{FT_UInt}, Ptr{FT_Int}, Ptr{FT_Int}, Ptr{FT_Matrix}), glyph, sub_index, p_index, p_flags, p_arg1, p_arg2, p_transform)
-end
-
-struct FT_LayerIterator_
-    num_layers::FT_UInt
-    layer::FT_UInt
-    p::Ptr{FT_Byte}
-end
-
-const FT_LayerIterator = FT_LayerIterator_
-
-function FT_Get_Color_Glyph_Layer(face, base_glyph, aglyph_index, acolor_index, iterator)
-    ccall((:FT_Get_Color_Glyph_Layer, libfreetype), FT_Bool, (FT_Face, FT_UInt, Ptr{FT_UInt}, Ptr{FT_UInt}, Ptr{FT_LayerIterator}), face, base_glyph, aglyph_index, acolor_index, iterator)
 end
 
 function FT_Get_FSType_Flags(face)
@@ -1063,6 +1076,8 @@ const FT_RENDER_POOL_SIZE = Clong(16384)
 
 const FT_MAX_MODULES = 32
 
+const FT_CONFIG_OPTION_SVG = nothing
+
 const TT_CONFIG_OPTION_EMBEDDED_BITMAPS = nothing
 
 const TT_CONFIG_OPTION_COLOR_LAYERS = nothing
@@ -1091,7 +1106,7 @@ const TT_CONFIG_CMAP_FORMAT_14 = nothing
 
 const TT_CONFIG_OPTION_BYTECODE_INTERPRETER = nothing
 
-const TT_CONFIG_OPTION_SUBPIXEL_HINTING = 2
+const TT_CONFIG_OPTION_SUBPIXEL_HINTING = nothing
 
 const TT_CONFIG_OPTION_GX_VAR_SUPPORT = nothing
 
@@ -1125,11 +1140,11 @@ const AF_CONFIG_OPTION_CJK = nothing
 
 const AF_CONFIG_OPTION_INDIC = nothing
 
-const AF_CONFIG_OPTION_USE_WARPER = nothing
-
 const TT_USE_BYTECODE_INTERPRETER = nothing
 
 const TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL = nothing
+
+const TT_SUPPORT_COLRV1 = nothing
 
 const ft_ptrdiff_t = ptrdiff_t
 
@@ -1149,13 +1164,21 @@ const FT_LONG_MAX = LONG_MAX
 
 const FT_ULONG_MAX = ULONG_MAX
 
+const FT_LLONG_MAX = LLONG_MAX
+
+const FT_LLONG_MIN = LLONG_MIN
+
+const FT_ULLONG_MAX = ULLONG_MAX
+
 const FT_FILE = FILE
+
+const ft_snprintf = snprintf
 
 const FT_SIZEOF_INT = 32 ÷ FT_CHAR_BIT
 
 const FT_SIZEOF_LONG = 64 ÷ FT_CHAR_BIT
 
-const FT_LONG64 = nothing
+const FT_SIZEOF_LONG_LONG = 64 ÷ FT_CHAR_BIT
 
 const FT_INT64 = Clong
 
@@ -1259,6 +1282,8 @@ const FT_RASTER_FLAG_DIRECT = 0x02
 
 const FT_RASTER_FLAG_CLIP = 0x04
 
+const FT_RASTER_FLAG_SDF = 0x08
+
 const ft_raster_flag_default = FT_RASTER_FLAG_DEFAULT
 
 const ft_raster_flag_aa = FT_RASTER_FLAG_AA
@@ -1343,6 +1368,12 @@ const FT_FACE_FLAG_COLOR = Clong(1) << 14
 
 const FT_FACE_FLAG_VARIATION = Clong(1) << 15
 
+const FT_FACE_FLAG_SVG = Clong(1) << 16
+
+const FT_FACE_FLAG_SBIX = Clong(1) << 17
+
+const FT_FACE_FLAG_SBIX_OVERLAY = Clong(1) << 18
+
 const FT_STYLE_FLAG_ITALIC = 1 << 0
 
 const FT_STYLE_FLAG_BOLD = 1 << 1
@@ -1395,6 +1426,8 @@ const FT_LOAD_MONOCHROME = Clong(1) << 12
 
 const FT_LOAD_LINEAR_DESIGN = Clong(1) << 13
 
+const FT_LOAD_SBITS_ONLY = Clong(1) << 14
+
 const FT_LOAD_NO_AUTOHINT = Clong(1) << 15
 
 const FT_LOAD_COLOR = Clong(1) << 20
@@ -1403,11 +1436,11 @@ const FT_LOAD_COMPUTE_METRICS = Clong(1) << 21
 
 const FT_LOAD_BITMAP_METRICS_ONLY = Clong(1) << 22
 
+const FT_LOAD_NO_SVG = Clong(1) << 24
+
 const FT_LOAD_ADVANCE_ONLY = Clong(1) << 8
 
-const FT_LOAD_SBITS_ONLY = Clong(1) << 14
-
-FT_LOAD_TARGET_(x) = FT_Int32(x & 15) << 16
+const FT_LOAD_SVG_ONLY = Clong(1) << 23
 
 const FT_LOAD_TARGET_NORMAL = FT_LOAD_TARGET_(FT_RENDER_MODE_NORMAL)
 
@@ -1457,9 +1490,9 @@ const FT_FSTYPE_BITMAP_EMBEDDING_ONLY = 0x0200
 
 const FREETYPE_MAJOR = 2
 
-const FREETYPE_MINOR = 10
+const FREETYPE_MINOR = 13
 
-const FREETYPE_PATCH = 4
+const FREETYPE_PATCH = 1
 
 # exports
 const PREFIXES = ["FREETYPE_", "FT_", "ft_", "TT_", "TTAG_", "CFF_", "T1_", "CID_", "PS_", "t1_"]

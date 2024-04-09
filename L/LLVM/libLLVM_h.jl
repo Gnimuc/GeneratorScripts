@@ -538,7 +538,7 @@ end
     LLVMModuleFlagBehaviorAppendUnique = 5
 end
 
-@cenum __JL_Ctag_85::Int32 begin
+@cenum var"enum (unnamed at /Users/gnimuc/.julia/artifacts/7b5c976e2c8b493af7aeefbbb09689d2f3e8faba/include/llvm-c/Core.h:451:1)"::Int32 begin
     LLVMAttributeReturnIndex = 0
     LLVMAttributeFunctionIndex = -1
 end
@@ -3434,7 +3434,7 @@ end
     LLVMDWARFEmissionLineTablesOnly = 2
 end
 
-@cenum __JL_Ctag_89::UInt32 begin
+@cenum var"enum (unnamed at /Users/gnimuc/.julia/artifacts/7b5c976e2c8b493af7aeefbbb09689d2f3e8faba/include/llvm-c/DebugInfo.h:130:1)"::UInt32 begin
     LLVMMDStringMetadataKind = 0
     LLVMConstantAsMetadataMetadataKind = 1
     LLVMLocalAsMetadataMetadataKind = 2

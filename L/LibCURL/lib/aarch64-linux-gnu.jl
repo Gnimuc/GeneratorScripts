@@ -126,34 +126,14 @@ const curl_resolver_start_callback = Ptr{Cvoid}
     CURLFILETYPE_UNKNOWN = 8
 end
 
-mutable struct __JL_Ctag_57
+mutable struct var"struct (unnamed at /Users/gnimuc/.julia/artifacts/3e0a5febaa5f6f9c3b07cfc1930896df6a1f6090/include/curl/curl.h:315:3)"
     time::Ptr{Cchar}
     perm::Ptr{Cchar}
     user::Ptr{Cchar}
     group::Ptr{Cchar}
     target::Ptr{Cchar}
-    __JL_Ctag_57() = new()
+    var"struct (unnamed at /Users/gnimuc/.julia/artifacts/3e0a5febaa5f6f9c3b07cfc1930896df6a1f6090/include/curl/curl.h:315:3)"() = new()
 end
-function Base.getproperty(x::Ptr{__JL_Ctag_57}, f::Symbol)
-    f === :time && return Ptr{Ptr{Cchar}}(x + 0)
-    f === :perm && return Ptr{Ptr{Cchar}}(x + 8)
-    f === :user && return Ptr{Ptr{Cchar}}(x + 16)
-    f === :group && return Ptr{Ptr{Cchar}}(x + 24)
-    f === :target && return Ptr{Ptr{Cchar}}(x + 32)
-    return getfield(x, f)
-end
-
-function Base.getproperty(x::__JL_Ctag_57, f::Symbol)
-    r = Ref{__JL_Ctag_57}(x)
-    ptr = Base.unsafe_convert(Ptr{__JL_Ctag_57}, r)
-    fptr = getproperty(ptr, f)
-    GC.@preserve r unsafe_load(fptr)
-end
-
-function Base.setproperty!(x::Ptr{__JL_Ctag_57}, f::Symbol, v)
-    unsafe_store!(getproperty(x, f), v)
-end
-
 
 struct curl_fileinfo
     data::NTuple{128, UInt8}
@@ -168,7 +148,7 @@ function Base.getproperty(x::Ptr{curl_fileinfo}, f::Symbol)
     f === :gid && return Ptr{Cint}(x + 32)
     f === :size && return Ptr{curl_off_t}(x + 40)
     f === :hardlinks && return Ptr{Clong}(x + 48)
-    f === :strings && return Ptr{__JL_Ctag_57}(x + 56)
+    f === :strings && return Ptr{var"struct (unnamed at /Users/gnimuc/.julia/artifacts/3e0a5febaa5f6f9c3b07cfc1930896df6a1f6090/include/curl/curl.h:315:3)"}(x + 56)
     f === :flags && return Ptr{Cuint}(x + 96)
     f === :b_data && return Ptr{Ptr{Cchar}}(x + 104)
     f === :b_size && return Ptr{Csize_t}(x + 112)
@@ -888,7 +868,7 @@ const curl_hstswrite_callback = Ptr{Cvoid}
     CURLOPT_LASTENTRY = 10324
 end
 
-@enum __JL_Ctag_34::UInt32 begin
+@enum var"enum (unnamed at /Users/gnimuc/.julia/artifacts/3e0a5febaa5f6f9c3b07cfc1930896df6a1f6090/include/curl/curl.h:2253:1)"::UInt32 begin
     CURL_HTTP_VERSION_NONE = 0
     CURL_HTTP_VERSION_1_0 = 1
     CURL_HTTP_VERSION_1_1 = 2
@@ -900,7 +880,7 @@ end
     CURL_HTTP_VERSION_LAST = 32
 end
 
-@enum __JL_Ctag_35::UInt32 begin
+@enum var"enum (unnamed at /Users/gnimuc/.julia/artifacts/3e0a5febaa5f6f9c3b07cfc1930896df6a1f6090/include/curl/curl.h:2281:1)"::UInt32 begin
     CURL_RTSPREQ_NONE = 0
     CURL_RTSPREQ_OPTIONS = 1
     CURL_RTSPREQ_DESCRIBE = 2
@@ -923,7 +903,7 @@ end
     CURL_NETRC_LAST = 3
 end
 
-@enum __JL_Ctag_36::UInt32 begin
+@enum var"enum (unnamed at /Users/gnimuc/.julia/artifacts/3e0a5febaa5f6f9c3b07cfc1930896df6a1f6090/include/curl/curl.h:2309:1)"::UInt32 begin
     CURL_SSLVERSION_DEFAULT = 0
     CURL_SSLVERSION_TLSv1 = 1
     CURL_SSLVERSION_SSLv2 = 2
@@ -935,7 +915,7 @@ end
     CURL_SSLVERSION_LAST = 8
 end
 
-@enum __JL_Ctag_37::UInt32 begin
+@enum var"enum (unnamed at /Users/gnimuc/.julia/artifacts/3e0a5febaa5f6f9c3b07cfc1930896df6a1f6090/include/curl/curl.h:2322:1)"::UInt32 begin
     CURL_SSLVERSION_MAX_NONE = 0
     CURL_SSLVERSION_MAX_DEFAULT = 65536
     CURL_SSLVERSION_MAX_TLSv1_0 = 262144
@@ -1403,24 +1383,24 @@ end
     CURLMSG_LAST = 2
 end
 
-struct __JL_Ctag_56
+struct var"union (unnamed at /Users/gnimuc/.julia/artifacts/3e0a5febaa5f6f9c3b07cfc1930896df6a1f6090/include/curl/multi.h:104:3)"
     data::NTuple{8, UInt8}
 end
 
-function Base.getproperty(x::Ptr{__JL_Ctag_56}, f::Symbol)
+function Base.getproperty(x::Ptr{var"union (unnamed at /Users/gnimuc/.julia/artifacts/3e0a5febaa5f6f9c3b07cfc1930896df6a1f6090/include/curl/multi.h:104:3)"}, f::Symbol)
     f === :whatever && return Ptr{Ptr{Cvoid}}(x + 0)
     f === :result && return Ptr{CURLcode}(x + 0)
     return getfield(x, f)
 end
 
-function Base.getproperty(x::__JL_Ctag_56, f::Symbol)
-    r = Ref{__JL_Ctag_56}(x)
-    ptr = Base.unsafe_convert(Ptr{__JL_Ctag_56}, r)
+function Base.getproperty(x::var"union (unnamed at /Users/gnimuc/.julia/artifacts/3e0a5febaa5f6f9c3b07cfc1930896df6a1f6090/include/curl/multi.h:104:3)", f::Symbol)
+    r = Ref{var"union (unnamed at /Users/gnimuc/.julia/artifacts/3e0a5febaa5f6f9c3b07cfc1930896df6a1f6090/include/curl/multi.h:104:3)"}(x)
+    ptr = Base.unsafe_convert(Ptr{var"union (unnamed at /Users/gnimuc/.julia/artifacts/3e0a5febaa5f6f9c3b07cfc1930896df6a1f6090/include/curl/multi.h:104:3)"}, r)
     fptr = getproperty(ptr, f)
     GC.@preserve r unsafe_load(fptr)
 end
 
-function Base.setproperty!(x::Ptr{__JL_Ctag_56}, f::Symbol, v)
+function Base.setproperty!(x::Ptr{var"union (unnamed at /Users/gnimuc/.julia/artifacts/3e0a5febaa5f6f9c3b07cfc1930896df6a1f6090/include/curl/multi.h:104:3)"}, f::Symbol, v)
     unsafe_store!(getproperty(x, f), v)
 end
 
@@ -1431,7 +1411,7 @@ end
 function Base.getproperty(x::Ptr{CURLMsg}, f::Symbol)
     f === :msg && return Ptr{CURLMSG}(x + 0)
     f === :easy_handle && return Ptr{Ptr{CURL}}(x + 8)
-    f === :data && return Ptr{__JL_Ctag_56}(x + 16)
+    f === :data && return Ptr{var"union (unnamed at /Users/gnimuc/.julia/artifacts/3e0a5febaa5f6f9c3b07cfc1930896df6a1f6090/include/curl/multi.h:104:3)"}(x + 16)
     return getfield(x, f)
 end
 
@@ -1712,17 +1692,17 @@ end
 
 const LIBCURL_COPYRIGHT = "Daniel Stenberg, <daniel@haxx.se>."
 
-const LIBCURL_VERSION = "8.4.0"
+const LIBCURL_VERSION = "8.5.0"
 
 const LIBCURL_VERSION_MAJOR = 8
 
-const LIBCURL_VERSION_MINOR = 4
+const LIBCURL_VERSION_MINOR = 5
 
 const LIBCURL_VERSION_PATCH = 0
 
-const LIBCURL_VERSION_NUM = 0x00080400
+const LIBCURL_VERSION_NUM = 0x00080500
 
-const LIBCURL_TIMESTAMP = "2023-10-11"
+const LIBCURL_TIMESTAMP = "2023-12-06"
 
 const CURL_TYPEOF_CURL_OFF_T = Clong
 
@@ -2341,4 +2321,6 @@ const CURLWS_OFFSET = 1 << 5
 const CURLWS_PONG = 1 << 6
 
 const CURLWS_RAW_MODE = 1 << 0
+
+# Skipping MacroDefinition: CURL_TEMP_PRINTF ( a , b ) __attribute__ ( ( format ( printf , a , b ) ) )
 

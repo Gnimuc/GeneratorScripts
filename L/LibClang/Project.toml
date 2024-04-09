@@ -5,4 +5,4 @@ Clang_jll = "0ee61d77-7f21-5576-8119-9fcc46b10100"
 
 [compat]
 CEnum = "0.4,0.5"
-Clang = "0.17"
+Clang = "0.18"

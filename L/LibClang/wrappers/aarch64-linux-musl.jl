@@ -155,6 +155,216 @@ function clang_ModuleMapDescriptor_dispose(arg1)
     ccall((:clang_ModuleMapDescriptor_dispose, libclang), Cvoid, (CXModuleMapDescriptor,), arg1)
 end
 
+const CXFile = Ptr{Cvoid}
+
+function clang_getFileName(SFile)
+    ccall((:clang_getFileName, libclang), CXString, (CXFile,), SFile)
+end
+
+function clang_getFileTime(SFile)
+    ccall((:clang_getFileTime, libclang), time_t, (CXFile,), SFile)
+end
+
+struct CXFileUniqueID
+    data::NTuple{3, Culonglong}
+end
+
+function clang_getFileUniqueID(file, outID)
+    ccall((:clang_getFileUniqueID, libclang), Cint, (CXFile, Ptr{CXFileUniqueID}), file, outID)
+end
+
+function clang_File_isEqual(file1, file2)
+    ccall((:clang_File_isEqual, libclang), Cint, (CXFile, CXFile), file1, file2)
+end
+
+function clang_File_tryGetRealPathName(file)
+    ccall((:clang_File_tryGetRealPathName, libclang), CXString, (CXFile,), file)
+end
+
+struct CXSourceLocation
+    ptr_data::NTuple{2, Ptr{Cvoid}}
+    int_data::Cuint
+end
+
+struct CXSourceRange
+    ptr_data::NTuple{2, Ptr{Cvoid}}
+    begin_int_data::Cuint
+    end_int_data::Cuint
+end
+
+function clang_getNullLocation()
+    ccall((:clang_getNullLocation, libclang), CXSourceLocation, ())
+end
+
+function clang_equalLocations(loc1, loc2)
+    ccall((:clang_equalLocations, libclang), Cuint, (CXSourceLocation, CXSourceLocation), loc1, loc2)
+end
+
+function clang_Location_isInSystemHeader(location)
+    ccall((:clang_Location_isInSystemHeader, libclang), Cint, (CXSourceLocation,), location)
+end
+
+function clang_Location_isFromMainFile(location)
+    ccall((:clang_Location_isFromMainFile, libclang), Cint, (CXSourceLocation,), location)
+end
+
+function clang_getNullRange()
+    ccall((:clang_getNullRange, libclang), CXSourceRange, ())
+end
+
+function clang_getRange(_begin, _end)
+    ccall((:clang_getRange, libclang), CXSourceRange, (CXSourceLocation, CXSourceLocation), _begin, _end)
+end
+
+function clang_equalRanges(range1, range2)
+    ccall((:clang_equalRanges, libclang), Cuint, (CXSourceRange, CXSourceRange), range1, range2)
+end
+
+function clang_Range_isNull(range)
+    ccall((:clang_Range_isNull, libclang), Cint, (CXSourceRange,), range)
+end
+
+function clang_getExpansionLocation(location, file, line, column, offset)
+    ccall((:clang_getExpansionLocation, libclang), Cvoid, (CXSourceLocation, Ptr{CXFile}, Ptr{Cuint}, Ptr{Cuint}, Ptr{Cuint}), location, file, line, column, offset)
+end
+
+function clang_getPresumedLocation(location, filename, line, column)
+    ccall((:clang_getPresumedLocation, libclang), Cvoid, (CXSourceLocation, Ptr{CXString}, Ptr{Cuint}, Ptr{Cuint}), location, filename, line, column)
+end
+
+function clang_getInstantiationLocation(location, file, line, column, offset)
+    ccall((:clang_getInstantiationLocation, libclang), Cvoid, (CXSourceLocation, Ptr{CXFile}, Ptr{Cuint}, Ptr{Cuint}, Ptr{Cuint}), location, file, line, column, offset)
+end
+
+function clang_getSpellingLocation(location, file, line, column, offset)
+    ccall((:clang_getSpellingLocation, libclang), Cvoid, (CXSourceLocation, Ptr{CXFile}, Ptr{Cuint}, Ptr{Cuint}, Ptr{Cuint}), location, file, line, column, offset)
+end
+
+function clang_getFileLocation(location, file, line, column, offset)
+    ccall((:clang_getFileLocation, libclang), Cvoid, (CXSourceLocation, Ptr{CXFile}, Ptr{Cuint}, Ptr{Cuint}, Ptr{Cuint}), location, file, line, column, offset)
+end
+
+function clang_getRangeStart(range)
+    ccall((:clang_getRangeStart, libclang), CXSourceLocation, (CXSourceRange,), range)
+end
+
+function clang_getRangeEnd(range)
+    ccall((:clang_getRangeEnd, libclang), CXSourceLocation, (CXSourceRange,), range)
+end
+
+struct CXSourceRangeList
+    count::Cuint
+    ranges::Ptr{CXSourceRange}
+end
+
+function clang_disposeSourceRangeList(ranges)
+    ccall((:clang_disposeSourceRangeList, libclang), Cvoid, (Ptr{CXSourceRangeList},), ranges)
+end
+
+@cenum CXDiagnosticSeverity::UInt32 begin
+    CXDiagnostic_Ignored = 0
+    CXDiagnostic_Note = 1
+    CXDiagnostic_Warning = 2
+    CXDiagnostic_Error = 3
+    CXDiagnostic_Fatal = 4
+end
+
+const CXDiagnostic = Ptr{Cvoid}
+
+const CXDiagnosticSet = Ptr{Cvoid}
+
+function clang_getNumDiagnosticsInSet(Diags)
+    ccall((:clang_getNumDiagnosticsInSet, libclang), Cuint, (CXDiagnosticSet,), Diags)
+end
+
+function clang_getDiagnosticInSet(Diags, Index)
+    ccall((:clang_getDiagnosticInSet, libclang), CXDiagnostic, (CXDiagnosticSet, Cuint), Diags, Index)
+end
+
+@cenum CXLoadDiag_Error::UInt32 begin
+    CXLoadDiag_None = 0
+    CXLoadDiag_Unknown = 1
+    CXLoadDiag_CannotLoad = 2
+    CXLoadDiag_InvalidFile = 3
+end
+
+function clang_loadDiagnostics(file, error, errorString)
+    ccall((:clang_loadDiagnostics, libclang), CXDiagnosticSet, (Ptr{Cchar}, Ptr{CXLoadDiag_Error}, Ptr{CXString}), file, error, errorString)
+end
+
+function clang_disposeDiagnosticSet(Diags)
+    ccall((:clang_disposeDiagnosticSet, libclang), Cvoid, (CXDiagnosticSet,), Diags)
+end
+
+function clang_getChildDiagnostics(D)
+    ccall((:clang_getChildDiagnostics, libclang), CXDiagnosticSet, (CXDiagnostic,), D)
+end
+
+function clang_disposeDiagnostic(Diagnostic)
+    ccall((:clang_disposeDiagnostic, libclang), Cvoid, (CXDiagnostic,), Diagnostic)
+end
+
+@cenum CXDiagnosticDisplayOptions::UInt32 begin
+    CXDiagnostic_DisplaySourceLocation = 1
+    CXDiagnostic_DisplayColumn = 2
+    CXDiagnostic_DisplaySourceRanges = 4
+    CXDiagnostic_DisplayOption = 8
+    CXDiagnostic_DisplayCategoryId = 16
+    CXDiagnostic_DisplayCategoryName = 32
+end
+
+function clang_formatDiagnostic(Diagnostic, Options)
+    ccall((:clang_formatDiagnostic, libclang), CXString, (CXDiagnostic, Cuint), Diagnostic, Options)
+end
+
+function clang_defaultDiagnosticDisplayOptions()
+    ccall((:clang_defaultDiagnosticDisplayOptions, libclang), Cuint, ())
+end
+
+function clang_getDiagnosticSeverity(arg1)
+    ccall((:clang_getDiagnosticSeverity, libclang), CXDiagnosticSeverity, (CXDiagnostic,), arg1)
+end
+
+function clang_getDiagnosticLocation(arg1)
+    ccall((:clang_getDiagnosticLocation, libclang), CXSourceLocation, (CXDiagnostic,), arg1)
+end
+
+function clang_getDiagnosticSpelling(arg1)
+    ccall((:clang_getDiagnosticSpelling, libclang), CXString, (CXDiagnostic,), arg1)
+end
+
+function clang_getDiagnosticOption(Diag, Disable)
+    ccall((:clang_getDiagnosticOption, libclang), CXString, (CXDiagnostic, Ptr{CXString}), Diag, Disable)
+end
+
+function clang_getDiagnosticCategory(arg1)
+    ccall((:clang_getDiagnosticCategory, libclang), Cuint, (CXDiagnostic,), arg1)
+end
+
+function clang_getDiagnosticCategoryName(Category)
+    ccall((:clang_getDiagnosticCategoryName, libclang), CXString, (Cuint,), Category)
+end
+
+function clang_getDiagnosticCategoryText(arg1)
+    ccall((:clang_getDiagnosticCategoryText, libclang), CXString, (CXDiagnostic,), arg1)
+end
+
+function clang_getDiagnosticNumRanges(arg1)
+    ccall((:clang_getDiagnosticNumRanges, libclang), Cuint, (CXDiagnostic,), arg1)
+end
+
+function clang_getDiagnosticRange(Diagnostic, Range)
+    ccall((:clang_getDiagnosticRange, libclang), CXSourceRange, (CXDiagnostic, Cuint), Diagnostic, Range)
+end
+
+function clang_getDiagnosticNumFixIts(Diagnostic)
+    ccall((:clang_getDiagnosticNumFixIts, libclang), Cuint, (CXDiagnostic,), Diagnostic)
+end
+
+function clang_getDiagnosticFixIt(Diagnostic, FixIt, ReplacementRange)
+    ccall((:clang_getDiagnosticFixIt, libclang), CXString, (CXDiagnostic, Cuint, Ptr{CXSourceRange}), Diagnostic, FixIt, ReplacementRange)
+end
+
 const CXIndex = Ptr{Cvoid}
 
 mutable struct CXTargetInfoImpl end
@@ -226,24 +436,6 @@ function clang_CXIndex_setInvocationEmissionPathOption(arg1, Path)
     ccall((:clang_CXIndex_setInvocationEmissionPathOption, libclang), Cvoid, (CXIndex, Ptr{Cchar}), arg1, Path)
 end
 
-const CXFile = Ptr{Cvoid}
-
-function clang_getFileName(SFile)
-    ccall((:clang_getFileName, libclang), CXString, (CXFile,), SFile)
-end
-
-function clang_getFileTime(SFile)
-    ccall((:clang_getFileTime, libclang), time_t, (CXFile,), SFile)
-end
-
-struct CXFileUniqueID
-    data::NTuple{3, Culonglong}
-end
-
-function clang_getFileUniqueID(file, outID)
-    ccall((:clang_getFileUniqueID, libclang), Cint, (CXFile, Ptr{CXFileUniqueID}), file, outID)
-end
-
 function clang_isFileMultipleIncludeGuarded(tu, file)
     ccall((:clang_isFileMultipleIncludeGuarded, libclang), Cuint, (CXTranslationUnit, CXFile), tu, file)
 end
@@ -256,33 +448,6 @@ function clang_getFileContents(tu, file, size)
     ccall((:clang_getFileContents, libclang), Ptr{Cchar}, (CXTranslationUnit, CXFile, Ptr{Csize_t}), tu, file, size)
 end
 
-function clang_File_isEqual(file1, file2)
-    ccall((:clang_File_isEqual, libclang), Cint, (CXFile, CXFile), file1, file2)
-end
-
-function clang_File_tryGetRealPathName(file)
-    ccall((:clang_File_tryGetRealPathName, libclang), CXString, (CXFile,), file)
-end
-
-struct CXSourceLocation
-    ptr_data::NTuple{2, Ptr{Cvoid}}
-    int_data::Cuint
-end
-
-struct CXSourceRange
-    ptr_data::NTuple{2, Ptr{Cvoid}}
-    begin_int_data::Cuint
-    end_int_data::Cuint
-end
-
-function clang_getNullLocation()
-    ccall((:clang_getNullLocation, libclang), CXSourceLocation, ())
-end
-
-function clang_equalLocations(loc1, loc2)
-    ccall((:clang_equalLocations, libclang), Cuint, (CXSourceLocation, CXSourceLocation), loc1, loc2)
-end
-
 function clang_getLocation(tu, file, line, column)
     ccall((:clang_getLocation, libclang), CXSourceLocation, (CXTranslationUnit, CXFile, Cuint, Cuint), tu, file, line, column)
 end
@@ -291,112 +456,12 @@ function clang_getLocationForOffset(tu, file, offset)
     ccall((:clang_getLocationForOffset, libclang), CXSourceLocation, (CXTranslationUnit, CXFile, Cuint), tu, file, offset)
 end
 
-function clang_Location_isInSystemHeader(location)
-    ccall((:clang_Location_isInSystemHeader, libclang), Cint, (CXSourceLocation,), location)
-end
-
-function clang_Location_isFromMainFile(location)
-    ccall((:clang_Location_isFromMainFile, libclang), Cint, (CXSourceLocation,), location)
-end
-
-function clang_getNullRange()
-    ccall((:clang_getNullRange, libclang), CXSourceRange, ())
-end
-
-function clang_getRange(_begin, _end)
-    ccall((:clang_getRange, libclang), CXSourceRange, (CXSourceLocation, CXSourceLocation), _begin, _end)
-end
-
-function clang_equalRanges(range1, range2)
-    ccall((:clang_equalRanges, libclang), Cuint, (CXSourceRange, CXSourceRange), range1, range2)
-end
-
-function clang_Range_isNull(range)
-    ccall((:clang_Range_isNull, libclang), Cint, (CXSourceRange,), range)
-end
-
-function clang_getExpansionLocation(location, file, line, column, offset)
-    ccall((:clang_getExpansionLocation, libclang), Cvoid, (CXSourceLocation, Ptr{CXFile}, Ptr{Cuint}, Ptr{Cuint}, Ptr{Cuint}), location, file, line, column, offset)
-end
-
-function clang_getPresumedLocation(location, filename, line, column)
-    ccall((:clang_getPresumedLocation, libclang), Cvoid, (CXSourceLocation, Ptr{CXString}, Ptr{Cuint}, Ptr{Cuint}), location, filename, line, column)
-end
-
-function clang_getInstantiationLocation(location, file, line, column, offset)
-    ccall((:clang_getInstantiationLocation, libclang), Cvoid, (CXSourceLocation, Ptr{CXFile}, Ptr{Cuint}, Ptr{Cuint}, Ptr{Cuint}), location, file, line, column, offset)
-end
-
-function clang_getSpellingLocation(location, file, line, column, offset)
-    ccall((:clang_getSpellingLocation, libclang), Cvoid, (CXSourceLocation, Ptr{CXFile}, Ptr{Cuint}, Ptr{Cuint}, Ptr{Cuint}), location, file, line, column, offset)
-end
-
-function clang_getFileLocation(location, file, line, column, offset)
-    ccall((:clang_getFileLocation, libclang), Cvoid, (CXSourceLocation, Ptr{CXFile}, Ptr{Cuint}, Ptr{Cuint}, Ptr{Cuint}), location, file, line, column, offset)
-end
-
-function clang_getRangeStart(range)
-    ccall((:clang_getRangeStart, libclang), CXSourceLocation, (CXSourceRange,), range)
-end
-
-function clang_getRangeEnd(range)
-    ccall((:clang_getRangeEnd, libclang), CXSourceLocation, (CXSourceRange,), range)
-end
-
-struct CXSourceRangeList
-    count::Cuint
-    ranges::Ptr{CXSourceRange}
-end
-
 function clang_getSkippedRanges(tu, file)
     ccall((:clang_getSkippedRanges, libclang), Ptr{CXSourceRangeList}, (CXTranslationUnit, CXFile), tu, file)
 end
 
 function clang_getAllSkippedRanges(tu)
     ccall((:clang_getAllSkippedRanges, libclang), Ptr{CXSourceRangeList}, (CXTranslationUnit,), tu)
-end
-
-function clang_disposeSourceRangeList(ranges)
-    ccall((:clang_disposeSourceRangeList, libclang), Cvoid, (Ptr{CXSourceRangeList},), ranges)
-end
-
-@cenum CXDiagnosticSeverity::UInt32 begin
-    CXDiagnostic_Ignored = 0
-    CXDiagnostic_Note = 1
-    CXDiagnostic_Warning = 2
-    CXDiagnostic_Error = 3
-    CXDiagnostic_Fatal = 4
-end
-
-const CXDiagnostic = Ptr{Cvoid}
-
-const CXDiagnosticSet = Ptr{Cvoid}
-
-function clang_getNumDiagnosticsInSet(Diags)
-    ccall((:clang_getNumDiagnosticsInSet, libclang), Cuint, (CXDiagnosticSet,), Diags)
-end
-
-function clang_getDiagnosticInSet(Diags, Index)
-    ccall((:clang_getDiagnosticInSet, libclang), CXDiagnostic, (CXDiagnosticSet, Cuint), Diags, Index)
-end
-
-@cenum CXLoadDiag_Error::UInt32 begin
-    CXLoadDiag_None = 0
-    CXLoadDiag_Unknown = 1
-    CXLoadDiag_CannotLoad = 2
-    CXLoadDiag_InvalidFile = 3
-end
-
-function clang_loadDiagnostics(file, error, errorString)
-    ccall((:clang_loadDiagnostics, libclang), CXDiagnosticSet, (Ptr{Cchar}, Ptr{CXLoadDiag_Error}, Ptr{CXString}), file, error, errorString)
-end
-
-function clang_disposeDiagnosticSet(Diags)
-    ccall((:clang_disposeDiagnosticSet, libclang), Cvoid, (CXDiagnosticSet,), Diags)
-end
-
-function clang_getChildDiagnostics(D)
-    ccall((:clang_getChildDiagnostics, libclang), CXDiagnosticSet, (CXDiagnostic,), D)
 end
 
 function clang_getNumDiagnostics(Unit)
@@ -409,71 +474,6 @@ end
 
 function clang_getDiagnosticSetFromTU(Unit)
     ccall((:clang_getDiagnosticSetFromTU, libclang), CXDiagnosticSet, (CXTranslationUnit,), Unit)
-end
-
-function clang_disposeDiagnostic(Diagnostic)
-    ccall((:clang_disposeDiagnostic, libclang), Cvoid, (CXDiagnostic,), Diagnostic)
-end
-
-@cenum CXDiagnosticDisplayOptions::UInt32 begin
-    CXDiagnostic_DisplaySourceLocation = 1
-    CXDiagnostic_DisplayColumn = 2
-    CXDiagnostic_DisplaySourceRanges = 4
-    CXDiagnostic_DisplayOption = 8
-    CXDiagnostic_DisplayCategoryId = 16
-    CXDiagnostic_DisplayCategoryName = 32
-end
-
-function clang_formatDiagnostic(Diagnostic, Options)
-    ccall((:clang_formatDiagnostic, libclang), CXString, (CXDiagnostic, Cuint), Diagnostic, Options)
-end
-
-function clang_defaultDiagnosticDisplayOptions()
-    ccall((:clang_defaultDiagnosticDisplayOptions, libclang), Cuint, ())
-end
-
-function clang_getDiagnosticSeverity(arg1)
-    ccall((:clang_getDiagnosticSeverity, libclang), CXDiagnosticSeverity, (CXDiagnostic,), arg1)
-end
-
-function clang_getDiagnosticLocation(arg1)
-    ccall((:clang_getDiagnosticLocation, libclang), CXSourceLocation, (CXDiagnostic,), arg1)
-end
-
-function clang_getDiagnosticSpelling(arg1)
-    ccall((:clang_getDiagnosticSpelling, libclang), CXString, (CXDiagnostic,), arg1)
-end
-
-function clang_getDiagnosticOption(Diag, Disable)
-    ccall((:clang_getDiagnosticOption, libclang), CXString, (CXDiagnostic, Ptr{CXString}), Diag, Disable)
-end
-
-function clang_getDiagnosticCategory(arg1)
-    ccall((:clang_getDiagnosticCategory, libclang), Cuint, (CXDiagnostic,), arg1)
-end
-
-function clang_getDiagnosticCategoryName(Category)
-    ccall((:clang_getDiagnosticCategoryName, libclang), CXString, (Cuint,), Category)
-end
-
-function clang_getDiagnosticCategoryText(arg1)
-    ccall((:clang_getDiagnosticCategoryText, libclang), CXString, (CXDiagnostic,), arg1)
-end
-
-function clang_getDiagnosticNumRanges(arg1)
-    ccall((:clang_getDiagnosticNumRanges, libclang), Cuint, (CXDiagnostic,), arg1)
-end
-
-function clang_getDiagnosticRange(Diagnostic, Range)
-    ccall((:clang_getDiagnosticRange, libclang), CXSourceRange, (CXDiagnostic, Cuint), Diagnostic, Range)
-end
-
-function clang_getDiagnosticNumFixIts(Diagnostic)
-    ccall((:clang_getDiagnosticNumFixIts, libclang), Cuint, (CXDiagnostic,), Diagnostic)
-end
-
-function clang_getDiagnosticFixIt(Diagnostic, FixIt, ReplacementRange)
-    ccall((:clang_getDiagnosticFixIt, libclang), CXString, (CXDiagnostic, Cuint, Ptr{CXSourceRange}), Diagnostic, FixIt, ReplacementRange)
 end
 
 function clang_getTranslationUnitSpelling(CTUnit)
@@ -744,7 +744,8 @@ end
     CXCursor_CXXAddrspaceCastExpr = 152
     CXCursor_ConceptSpecializationExpr = 153
     CXCursor_RequiresExpr = 154
-    CXCursor_LastExpr = 154
+    CXCursor_CXXParenListInitExpr = 155
+    CXCursor_LastExpr = 155
     CXCursor_FirstStmt = 200
     CXCursor_UnexposedStmt = 200
     CXCursor_LabelStmt = 201
@@ -852,7 +853,8 @@ end
     CXCursor_OMPMaskedTaskLoopSimdDirective = 302
     CXCursor_OMPParallelMaskedTaskLoopDirective = 303
     CXCursor_OMPParallelMaskedTaskLoopSimdDirective = 304
-    CXCursor_LastStmt = 304
+    CXCursor_OMPErrorDirective = 305
+    CXCursor_LastStmt = 305
     CXCursor_TranslationUnit = 350
     CXCursor_FirstAttr = 400
     CXCursor_UnexposedAttr = 400
@@ -1390,6 +1392,14 @@ function clang_getPointeeType(T)
     ccall((:clang_getPointeeType, libclang), CXType, (CXType,), T)
 end
 
+function clang_getUnqualifiedType(CT)
+    ccall((:clang_getUnqualifiedType, libclang), CXType, (CXType,), CT)
+end
+
+function clang_getNonReferenceType(CT)
+    ccall((:clang_getNonReferenceType, libclang), CXType, (CXType,), CT)
+end
+
 function clang_getTypeDeclaration(T)
     ccall((:clang_getTypeDeclaration, libclang), CXCursor, (CXType,), T)
 end
@@ -1885,6 +1895,10 @@ function clang_CXXMethod_isDefaulted(C)
     ccall((:clang_CXXMethod_isDefaulted, libclang), Cuint, (CXCursor,), C)
 end
 
+function clang_CXXMethod_isDeleted(C)
+    ccall((:clang_CXXMethod_isDeleted, libclang), Cuint, (CXCursor,), C)
+end
+
 function clang_CXXMethod_isPureVirtual(C)
     ccall((:clang_CXXMethod_isPureVirtual, libclang), Cuint, (CXCursor,), C)
 end
@@ -1895,6 +1909,14 @@ end
 
 function clang_CXXMethod_isVirtual(C)
     ccall((:clang_CXXMethod_isVirtual, libclang), Cuint, (CXCursor,), C)
+end
+
+function clang_CXXMethod_isCopyAssignmentOperator(C)
+    ccall((:clang_CXXMethod_isCopyAssignmentOperator, libclang), Cuint, (CXCursor,), C)
+end
+
+function clang_CXXMethod_isMoveAssignmentOperator(C)
+    ccall((:clang_CXXMethod_isMoveAssignmentOperator, libclang), Cuint, (CXCursor,), C)
 end
 
 function clang_CXXRecord_isAbstract(C)
@@ -2749,6 +2771,26 @@ function clang_FullComment_getAsXML(Comment)
     ccall((:clang_FullComment_getAsXML, libclang), CXString, (CXComment,), Comment)
 end
 
+mutable struct CXAPISetImpl end
+
+const CXAPISet = Ptr{CXAPISetImpl}
+
+function clang_createAPISet(tu, out_api)
+    ccall((:clang_createAPISet, libclang), CXErrorCode, (CXTranslationUnit, Ptr{CXAPISet}), tu, out_api)
+end
+
+function clang_disposeAPISet(api)
+    ccall((:clang_disposeAPISet, libclang), Cvoid, (CXAPISet,), api)
+end
+
+function clang_getSymbolGraphForUSR(usr, api)
+    ccall((:clang_getSymbolGraphForUSR, libclang), CXString, (Ptr{Cchar}, CXAPISet), usr, api)
+end
+
+function clang_getSymbolGraphForCursor(cursor)
+    ccall((:clang_getSymbolGraphForCursor, libclang), CXString, (CXCursor,), cursor)
+end
+
 function clang_install_aborting_llvm_fatal_error_handler()
     ccall((:clang_install_aborting_llvm_fatal_error_handler, libclang), Cvoid, ())
 end
@@ -2789,5 +2831,5 @@ end
 
 const CINDEX_VERSION_MAJOR = 0
 
-const CINDEX_VERSION_MINOR = 62
+const CINDEX_VERSION_MINOR = 63
 
