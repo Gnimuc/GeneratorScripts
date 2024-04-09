@@ -375,7 +375,7 @@ const FT_ListNodeRec = FT_ListNodeRec_
 
 const FT_ListRec = FT_ListRec_
 
-@cenum var"enum (unnamed at /Users/gnimuc/.julia/artifacts/c65e07e3da4f1bf519bc432389dbbd61df320457/include/freetype2/freetype/ftmoderr.h:147:3)"::UInt32 begin
+@cenum __JL_Ctag_1::UInt32 begin
     FT_Mod_Err_Base = 0
     FT_Mod_Err_Autofit = 0
     FT_Mod_Err_BDF = 0
@@ -403,7 +403,7 @@ const FT_ListRec = FT_ListRec_
     FT_Mod_Err_Max = 1
 end
 
-@cenum var"enum (unnamed at /Users/gnimuc/.julia/artifacts/c65e07e3da4f1bf519bc432389dbbd61df320457/include/freetype2/freetype/fterrors.h:195:3)"::UInt32 begin
+@cenum __JL_Ctag_2::UInt32 begin
     FT_Err_Ok = 0
     FT_Err_Cannot_Open_Resource = 1
     FT_Err_Unknown_File_Format = 2

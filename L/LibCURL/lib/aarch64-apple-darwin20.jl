@@ -867,7 +867,7 @@ const curl_hstswrite_callback = Ptr{Cvoid}
     CURLOPT_LASTENTRY = 10324
 end
 
-@enum var"enum (unnamed at /Users/gnimuc/.julia/artifacts/3e0a5febaa5f6f9c3b07cfc1930896df6a1f6090/include/curl/curl.h:2253:1)"::UInt32 begin
+@enum __JL_Ctag_1::UInt32 begin
     CURL_HTTP_VERSION_NONE = 0
     CURL_HTTP_VERSION_1_0 = 1
     CURL_HTTP_VERSION_1_1 = 2
@@ -879,7 +879,7 @@ end
     CURL_HTTP_VERSION_LAST = 32
 end
 
-@enum var"enum (unnamed at /Users/gnimuc/.julia/artifacts/3e0a5febaa5f6f9c3b07cfc1930896df6a1f6090/include/curl/curl.h:2281:1)"::UInt32 begin
+@enum __JL_Ctag_2::UInt32 begin
     CURL_RTSPREQ_NONE = 0
     CURL_RTSPREQ_OPTIONS = 1
     CURL_RTSPREQ_DESCRIBE = 2
@@ -902,7 +902,7 @@ end
     CURL_NETRC_LAST = 3
 end
 
-@enum var"enum (unnamed at /Users/gnimuc/.julia/artifacts/3e0a5febaa5f6f9c3b07cfc1930896df6a1f6090/include/curl/curl.h:2309:1)"::UInt32 begin
+@enum __JL_Ctag_3::UInt32 begin
     CURL_SSLVERSION_DEFAULT = 0
     CURL_SSLVERSION_TLSv1 = 1
     CURL_SSLVERSION_SSLv2 = 2
@@ -914,7 +914,7 @@ end
     CURL_SSLVERSION_LAST = 8
 end
 
-@enum var"enum (unnamed at /Users/gnimuc/.julia/artifacts/3e0a5febaa5f6f9c3b07cfc1930896df6a1f6090/include/curl/curl.h:2322:1)"::UInt32 begin
+@enum __JL_Ctag_4::UInt32 begin
     CURL_SSLVERSION_MAX_NONE = 0
     CURL_SSLVERSION_MAX_DEFAULT = 65536
     CURL_SSLVERSION_MAX_TLSv1_0 = 262144
